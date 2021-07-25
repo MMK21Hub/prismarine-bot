@@ -18,6 +18,10 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "discord.js": "^12.5.3"
+    "discord.js": "^12.5.3",
+    "minecraft-protocol": "^1.25.0",
+    "mineflayer": "^3.9.0",
+    "mineflayer-tps": "^1.0.1",
+    "prismarine-viewer": "^1.19.3"
   }
 }
