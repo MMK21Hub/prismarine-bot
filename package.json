@@ -1,0 +1,20 @@
+{
+  "name": "prismarine-bot",
+  "version": "1.0.0",
+  "description": "A discord bot that allows managing PrismarineJS-powered servers",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsc --watch"
+  },
+  "keywords": [
+    "discord",
+    "discord-bot",
+    "prismarinejs",
+    "minecraft"
+  ],
+  "author": "MMK21",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.3.5"
+  }
+}
