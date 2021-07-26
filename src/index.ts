@@ -9,6 +9,8 @@ interface registry {
   commands: Map<string, Command>;
 }
 
+type cmdType = "command" | "group" | "help";
+
 const prefix = "p!";
 const prefixRegex = new RegExp(`^${prefix}`);
 
@@ -71,23 +73,44 @@ class Command {
   params;
   id;
   callback;
+  type;
+  parent;
+  shortDesc;
+  desc;
 
   /**
    * Creates a new `Command` object.
-   * Note that this doesn't automatically register the command.
+   * Note that this doesn't automatically register the command:
+   * you have to call {@link registerCommands} for the command to be usable.
    * @param name The name of the command. This is what the user types to execute the command.
    * @param id A unique namespaced ID for the command.
    * @param callback The function to be run when a user executes the command.
    * @param params How many parameters should the command take?
+   * @param shortDesc A brief description to go in the command's line in the help menu.
+   * @param desc All information about the command, to be used when the user asks for specific help on this command.
+   * @param type Set to "group" to create a group that can have child commands. Set to "help" to make this command into a hardcoded help command.
    */
-  constructor(name: string, id: string, callback: Function, params = 0) {
+  constructor(
+    name: string,
+    id: string,
+    callback: Function,
+    params = 0,
+    shortDesc?: string,
+    desc?: string,
+    type: cmdType = "command",
+    parent?: string
+  ) {
     this.name = name;
     this.params = params;
     this.id = id;
     this.callback = callback;
+    this.desc = desc;
+    this.shortDesc = shortDesc;
+    this.type = type;
+    this.parent = parent;
 
-    // This is meant to be far above what anyone would need
     if (name.length > 16) {
+      // This is meant to be far above what anyone would need
       throw new Error("Command name lengths must be below 16 characters");
     }
     if (!validNamespacedId(id)) {
@@ -98,11 +121,17 @@ class Command {
     if (callback.length > 1) {
       throw new Error("Command callbacks can only take up to one parameter");
     }
+    if (shortDesc && shortDesc.search("\n")) {
+      throw new Error(
+        "Short descriptions cannot contain line breaks. Move details to the extended description."
+      );
+    }
   }
 }
 
 /**
- * Registers an array of commands
+ * Registers an array of commands.
+ * This lets you add new commands without restarting the bot :D
  */
 function registerCommands(commands: Command[]) {
   // Add each command to the registry

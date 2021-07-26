@@ -28,11 +28,15 @@ function validNamespacedId(value) {
     return false;
 }
 class Command {
-    constructor(name, id, callback, params = 0) {
+    constructor(name, id, callback, params = 0, shortDesc, desc, type = "command", parent) {
         this.name = name;
         this.params = params;
         this.id = id;
         this.callback = callback;
+        this.desc = desc;
+        this.shortDesc = shortDesc;
+        this.type = type;
+        this.parent = parent;
         if (name.length > 16) {
             throw new Error("Command name lengths must be below 16 characters");
         }
@@ -41,6 +45,9 @@ class Command {
         }
         if (callback.length > 1) {
             throw new Error("Command callbacks can only take up to one parameter");
+        }
+        if (shortDesc && shortDesc.search("\n")) {
+            throw new Error("Short descriptions cannot contain line breaks. Move details to the extended description.");
         }
     }
 }
