@@ -79,7 +79,7 @@ client.on("message", (msg) => {
     const command = registry.commands.get(commandId);
     if (!command)
         throw new Error("Could not find command with ID of " + commandId);
-    command.callback();
+    command.callback(msg);
 });
 client.login(process.env.DISCORD_TOKEN);
 //# sourceMappingURL=index.js.map

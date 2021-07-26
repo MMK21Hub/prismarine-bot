@@ -1,7 +1,7 @@
 // Initialization
 import { config } from "dotenv";
 config();
-import { Client } from "discord.js";
+import { Client, Message } from "discord.js";
 import Discord from "discord.js";
 const client: Client = new Discord.Client();
 
@@ -93,7 +93,7 @@ class Command {
   constructor(
     name: string,
     id: string,
-    callback: Function,
+    callback: (msg: Message) => void,
     params = 0,
     shortDesc?: string,
     desc?: string,
@@ -175,7 +175,7 @@ client.on("message", (msg) => {
     throw new Error("Could not find command with ID of " + commandId);
 
   // Execute the callback for the command
-  command.callback();
+  command.callback(msg);
 });
 
 client.login(process.env.DISCORD_TOKEN);
