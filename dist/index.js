@@ -64,8 +64,15 @@ client.on("message", (msg) => {
     if (!msg.content.match(prefixRegex))
         return;
     const splitCmd = msg.content.split(" ", 1);
-    const command = splitCmd[0].replace(prefixRegex, "");
-    console.log(`${msg.author.username} sent the ${command} command!`);
+    const commandName = splitCmd[0].replace(prefixRegex, "");
+    const args = splitCmd[1].split(" ");
+    const commandId = commandNameCache.get(commandName);
+    if (!commandId)
+        return;
+    const command = registry.commands.get(commandId);
+    if (!command)
+        throw new Error("Could not find command with ID of " + commandId);
+    command.callback();
 });
 client.login(process.env.DISCORD_TOKEN);
 //# sourceMappingURL=index.js.map

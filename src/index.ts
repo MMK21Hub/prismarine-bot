@@ -126,12 +126,27 @@ client.on("ready", () => {
 });
 
 client.on("message", (msg) => {
+  // Not a command
   if (!msg.content.match(prefixRegex)) return;
 
+  // Process the message to get `commandName` and `args` out of it
   const splitCmd = msg.content.split(" ", 1);
-  const command = splitCmd[0].replace(prefixRegex, "");
+  const commandName = splitCmd[0].replace(prefixRegex, "");
+  const args = splitCmd[1].split(" ");
 
-  console.log(`${msg.author.username} sent the ${command} command!`);
+  // If the command the user entered doesn't exist,
+  // ignore it.
+  const commandId = commandNameCache.get(commandName);
+  if (!commandId) return;
+
+  const command = registry.commands.get(commandId);
+
+  // Throw an error if he command isn't in the registry
+  if (!command)
+    throw new Error("Could not find command with ID of " + commandId);
+
+  // Execute the callback for the command
+  command.callback();
 });
 
 client.login(process.env.DISCORD_TOKEN);
