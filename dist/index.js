@@ -7,7 +7,7 @@ const prefixRegex = new RegExp(`^${prefix}`);
 const registry = {
     commands: new Map(),
 };
-const commandNameCache = new Map();
+let commandNameCache = new Map();
 function createCache(data, options) {
     const cache = new Map();
     let index = 0;
@@ -43,6 +43,15 @@ class Command {
             throw new Error("Command callbacks can only take up to one parameter");
         }
     }
+}
+function registerCommands(commands) {
+    for (const command of commands) {
+        registry.commands.set(command.id, command);
+    }
+    commandNameCache = createCache(commands, {
+        key: "name",
+        value: "id",
+    });
 }
 client.on("ready", () => {
     if (client.user) {

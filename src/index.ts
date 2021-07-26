@@ -17,7 +17,7 @@ const registry: registry = {
 };
 
 /** A map of command names to command IDs. Used for quick lookup of which command a user has entered. */
-const commandNameCache: Map<string, string> = new Map();
+let commandNameCache: Map<string, string> = new Map();
 
 /**
  * Generates a map that allows for quick lookup of a specific property
@@ -99,6 +99,22 @@ class Command {
       throw new Error("Command callbacks can only take up to one parameter");
     }
   }
+}
+
+/**
+ * Registers an array of commands
+ */
+function registerCommands(commands: Command[]) {
+  // Add each command to the registry
+  for (const command of commands) {
+    registry.commands.set(command.id, command);
+  }
+
+  // Update the cache
+  commandNameCache = createCache(commands, {
+    key: "name",
+    value: "id",
+  });
 }
 
 client.on("ready", () => {
