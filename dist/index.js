@@ -4,6 +4,12 @@ import Discord from "discord.js";
 const client = new Discord.Client();
 const prefix = "p!";
 const prefixRegex = new RegExp(`^${prefix}`);
+class Command {
+    constructor(name, params) {
+        this.name = name;
+        this.params = params;
+    }
+}
 client.on("ready", () => {
     if (client.user) {
         console.log(`Logged in as ${client.user.tag}`);
