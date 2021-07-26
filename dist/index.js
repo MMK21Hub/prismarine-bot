@@ -49,6 +49,9 @@ class Command {
         if (shortDesc && shortDesc.search("\n")) {
             throw new Error("Short descriptions cannot contain line breaks. Move details to the extended description.");
         }
+        if (name.toLowerCase() !== name) {
+            throw new Error("Command names should be lowercase");
+        }
     }
 }
 function registerCommands(commands) {
@@ -71,8 +74,8 @@ client.on("message", (msg) => {
     if (!msg.content.match(prefixRegex))
         return;
     const splitCmd = msg.content.split(" ", 1);
-    const commandName = splitCmd[0].replace(prefixRegex, "");
-    const args = splitCmd[1].split(" ");
+    const commandName = splitCmd[0].replace(prefixRegex, "").toLowerCase();
+    const args = splitCmd[1]?.split(" ");
     const commandId = commandNameCache.get(commandName);
     if (!commandId)
         return;

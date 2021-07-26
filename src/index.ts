@@ -126,6 +126,9 @@ class Command {
         "Short descriptions cannot contain line breaks. Move details to the extended description."
       );
     }
+    if (name.toLowerCase() !== name) {
+      throw new Error("Command names should be lowercase");
+    }
   }
 }
 
@@ -160,8 +163,8 @@ client.on("message", (msg) => {
 
   // Process the message to get `commandName` and `args` out of it
   const splitCmd = msg.content.split(" ", 1);
-  const commandName = splitCmd[0].replace(prefixRegex, "");
-  const args = splitCmd[1].split(" ");
+  const commandName = splitCmd[0].replace(prefixRegex, "").toLowerCase();
+  const args = splitCmd[1]?.split(" ");
 
   // If the command the user entered doesn't exist,
   // ignore it.
