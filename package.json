@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A discord bot that does some neat stuff with PrismarineJS",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "tsc --watch"
   },
