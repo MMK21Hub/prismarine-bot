@@ -154,6 +154,35 @@ function registerCommands(commands: Command[]) {
   });
 }
 
+registerCommands([
+  new Command(
+    "help",
+    "_help",
+    ({ message }) => {
+      let output = "**Commands:**\n```yaml\n";
+
+      registry.commands.forEach((cmd) => {
+        if (!cmd.shortDesc && cmd.desc) {
+          output += `${cmd.name} # Type "${prefix}help ${cmd.name}"\n`;
+        }
+        if (!cmd.shortDesc) {
+          output += `${cmd.name} # No description\n`;
+          return;
+        }
+        output += `${cmd.name} - ${cmd.shortDesc}\n`;
+      });
+
+      output += "```";
+
+      message.reply(output);
+    },
+    1,
+    "Displays a list of all available commands",
+    undefined,
+    "help"
+  ),
+]);
+
 client.on("ready", () => {
   if (client.user) {
     console.log(`Logged in as ${client.user.tag}`);
