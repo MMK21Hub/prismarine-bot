@@ -9,6 +9,11 @@ interface registry {
   commands: Map<string, Command>;
 }
 
+interface commandEvent {
+  message: Message;
+  args: string[] | null;
+}
+
 type cmdType = "command" | "group" | "help";
 
 const prefix = "p!";
@@ -93,7 +98,7 @@ class Command {
   constructor(
     name: string,
     id: string,
-    callback: (msg: Message) => void,
+    callback: (e: commandEvent) => void,
     params = 0,
     shortDesc?: string,
     desc?: string,
@@ -119,7 +124,7 @@ class Command {
       );
     }
     if (callback.length > 1) {
-      throw new Error("Command callbacks can only take up to one parameter");
+      throw new Error("Command callbacks should only take one parameter");
     }
     if (shortDesc && shortDesc.search("\n")) {
       throw new Error(
@@ -149,6 +154,12 @@ function registerCommands(commands: Command[]) {
   });
 }
 
+registerCommands([
+  new Command("help", "test", (msg) => {
+    msg.reply("Hi");
+  }),
+]);
+
 client.on("ready", () => {
   if (client.user) {
     console.log(`Logged in as ${client.user.tag}`);
@@ -173,7 +184,7 @@ client.on("message", (msg) => {
 
   const command = registry.commands.get(commandId);
 
-  // Throw an error if he command isn't in the registry
+  // Throw an error if the command isn't in the registry
   if (!command)
     throw new Error("Could not find command with ID of " + commandId);
 

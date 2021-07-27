@@ -44,7 +44,7 @@ class Command {
             throw new Error("Namespaced IDs must only contain characters a-z, 0-9, _ or :");
         }
         if (callback.length > 1) {
-            throw new Error("Command callbacks can only take up to one parameter");
+            throw new Error("Command callbacks should only take one parameter");
         }
         if (shortDesc && shortDesc.search("\n")) {
             throw new Error("Short descriptions cannot contain line breaks. Move details to the extended description.");
@@ -63,6 +63,11 @@ function registerCommands(commands) {
         value: "id",
     });
 }
+registerCommands([
+    new Command("help", "test", (msg) => {
+        msg.reply("Hi");
+    }),
+]);
 client.on("ready", () => {
     if (client.user) {
         console.log(`Logged in as ${client.user.tag}`);
