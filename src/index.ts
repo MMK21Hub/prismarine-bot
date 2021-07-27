@@ -11,7 +11,7 @@ interface registry {
 
 interface commandEvent {
   message: Message;
-  args: string[] | null;
+  args: string[];
 }
 
 type cmdType = "command" | "group" | "help";
@@ -154,12 +154,6 @@ function registerCommands(commands: Command[]) {
   });
 }
 
-registerCommands([
-  new Command("help", "test", (msg) => {
-    msg.reply("Hi");
-  }),
-]);
-
 client.on("ready", () => {
   if (client.user) {
     console.log(`Logged in as ${client.user.tag}`);
@@ -173,9 +167,9 @@ client.on("message", (msg) => {
   if (!msg.content.match(prefixRegex)) return;
 
   // Process the message to get `commandName` and `args` out of it
-  const splitCmd = msg.content.split(" ", 1);
+  const splitCmd = msg.content.split(" ");
   const commandName = splitCmd[0].replace(prefixRegex, "").toLowerCase();
-  const args = splitCmd[1]?.split(" ");
+  const args = splitCmd.slice(1);
 
   // If the command the user entered doesn't exist,
   // ignore it.
@@ -189,7 +183,7 @@ client.on("message", (msg) => {
     throw new Error("Could not find command with ID of " + commandId);
 
   // Execute the callback for the command
-  command.callback(msg);
+  command.callback({ args, message: msg });
 });
 
 client.login(process.env.DISCORD_TOKEN);

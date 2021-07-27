@@ -63,11 +63,6 @@ function registerCommands(commands) {
         value: "id",
     });
 }
-registerCommands([
-    new Command("help", "test", (msg) => {
-        msg.reply("Hi");
-    }),
-]);
 client.on("ready", () => {
     if (client.user) {
         console.log(`Logged in as ${client.user.tag}`);
@@ -78,16 +73,16 @@ client.on("ready", () => {
 client.on("message", (msg) => {
     if (!msg.content.match(prefixRegex))
         return;
-    const splitCmd = msg.content.split(" ", 1);
+    const splitCmd = msg.content.split(" ");
     const commandName = splitCmd[0].replace(prefixRegex, "").toLowerCase();
-    const args = splitCmd[1]?.split(" ");
+    const args = splitCmd.slice(1);
     const commandId = commandNameCache.get(commandName);
     if (!commandId)
         return;
     const command = registry.commands.get(commandId);
     if (!command)
         throw new Error("Could not find command with ID of " + commandId);
-    command.callback(msg);
+    command.callback({ args, message: msg });
 });
 client.login(process.env.DISCORD_TOKEN);
 //# sourceMappingURL=index.js.map
