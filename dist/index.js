@@ -46,7 +46,7 @@ class Command {
         if (callback.length > 1) {
             throw new Error("Command callbacks should only take one parameter");
         }
-        if (shortDesc && shortDesc.search("\n")) {
+        if (shortDesc && /\n/.test(shortDesc)) {
             throw new Error("Short descriptions cannot contain line breaks. Move details to the extended description.");
         }
         if (name.toLowerCase() !== name) {
