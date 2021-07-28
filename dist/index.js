@@ -3,8 +3,10 @@ config();
 import Discord from "discord.js";
 const client = new Discord.Client();
 import https from "https";
+import hash from "murmurhash-v3";
 const prefix = "p!";
 const prefixRegex = new RegExp(`^${prefix}`);
+const arrowRight = "**\u2192**";
 const registry = {
     commands: new Map(),
 };
@@ -98,20 +100,43 @@ registerCommands([
 ]);
 {
     const threadRolloutStatus = new Command("threads", "thread_rollout_status", (e) => {
+        if (e.params) {
+            const server = e.params[0];
+            const threadRolloutPercentage = 25;
+            if (!/\d{18}/.test(server)) {
+                e.message.reply(`:x: "${server}" doesn't look like a server ID.`);
+            }
+            const result = hash(`2020-09_threads:${server}`) % 1e4 <
+                threadRolloutPercentage * 100;
+            return e.message.reply(result
+                ? "That server has access to threads :tada:"
+                : "That server does not access to threads :pensive:");
+        }
         https.get("https://threads-rollout.advaith.workers.dev/", (res) => {
             res.on("data", (data) => {
                 e.message.reply(`Threads have been rolled out to ${data} of servers!`);
             });
         });
-    }, [], "Gets the percentage of servers that have access to threads", `\
+    }, [
+        {
+            name: "server",
+            optional: true,
+        },
+    ], "Gets the percentage of servers that have access to threads", `\
 Gets the percentage of servers that have access to threads.
 Threads are currently (as of 27 July) in early-access mode for selected servers.
 If they have community options enabled, they can opt-in to enable threads before they roll out fully on 17 August.
 This command lets you easily see how many servers are part of the rollout so far.
 
-**Usage:** ${prefixedCommand("threads")}
+**Usage:**
+Get rollout percentage: ${prefixedCommand("threads", [], "`")}
+Check if a server is enrolled: \
+${prefixedCommand("threads", ["<Server ID>"], "`")}
 
-**Credits:** Thanks to advaith for providing a thread rollout API for us all to use. (https://advaith.io/)`);
+**Credits:**
+Thanks to advaith for providing a thread rollout API for us all to use, \
+and for cracking the formula to check if a server has been enrolled yet.
+${arrowRight} https://advaith.io/`);
     registerCommands([threadRolloutStatus]);
 }
 client.on("ready", () => {
@@ -146,7 +171,7 @@ client.on("message", async (msg) => {
 :x: **Missing one or more required parameters**
 Expected ${minParams} parameter(s) but got ${params.length}.
 
-**\u2192** Type ${prefixedCommand("help", [command.name], "`")} \
+${arrowRight} Type ${prefixedCommand("help", [command.name], "`")} \
 to view command help.`);
         return;
     }
