@@ -14,6 +14,7 @@ interface registry {
 interface commandEvent {
   message: Message;
   params: string[];
+  command: Command;
 }
 
 interface commandParam {
@@ -22,7 +23,8 @@ interface commandParam {
   // TODO: Validation options
 }
 
-type cmdType = "command" | "group" | "help" | "stub";
+type cmdType = "normal" | "group" | "help" | "stub" | "overloaded";
+type commandCallback = (e: commandEvent) => void;
 
 const prefix = "p!";
 const prefixRegex = new RegExp(`^${prefix}`);
@@ -108,6 +110,8 @@ function prefixedCommand(command: string, args: string[] = [], wrap = "") {
   return prefix + command + " " + joinedArgs;
 }
 
+function handleOverloadedFunction(commandEvent: commandEvent) {}
+
 class Command {
   // Properties
   name;
@@ -118,6 +122,7 @@ class Command {
   parent;
   shortDesc;
   desc;
+  callback: commandCallback;
 
   /**
    * Creates a new `Command` object.
@@ -134,11 +139,11 @@ class Command {
   constructor(
     name: string,
     id: string,
-    handler: (e: commandEvent) => void,
+    handler: commandCallback | StubCommand[],
     params: commandParam[] = [],
     shortDesc?: string,
     desc?: string,
-    type: cmdType = "command",
+    type: cmdType = "normal",
     parent?: string
   ) {
     this.name = name;
@@ -149,6 +154,8 @@ class Command {
     this.shortDesc = shortDesc;
     this.type = type;
     this.parent = parent;
+    this.callback =
+      typeof handler === "function" ? handler : handleOverloadedFunction;
 
     if (name.length > 16) {
       // This is meant to be far above what anyone would need
@@ -159,7 +166,7 @@ class Command {
         "Namespaced IDs must only contain characters a-z, 0-9, _ or :"
       );
     }
-    if (handler.length > 1) {
+    if (typeof handler === "function" && handler.length > 1) {
       throw new Error("Command callbacks should only take one parameter");
     }
     if (shortDesc && /\n/.test(shortDesc)) {
@@ -170,6 +177,21 @@ class Command {
     if (name.toLowerCase() !== name) {
       throw new Error("Command names should be lowercase");
     }
+
+    if (typeof handler !== "function") {
+      this.type = "overloaded";
+    }
+  }
+}
+
+class StubCommand extends Command {
+  constructor(
+    id: string,
+    handler: commandCallback,
+    params: commandParam[] = [],
+    desc?: string
+  ) {
+    super("", id, handler, params, undefined, desc, "stub", undefined);
   }
 }
 
@@ -340,7 +362,7 @@ to view command help.`
   }
 
   // Execute the callback for the command
-  command.handler({ params, message: msg });
+  command.callback({ params, message: msg, command });
 });
 
 client.login(process.env.DISCORD_TOKEN);

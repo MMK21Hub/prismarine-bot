@@ -36,8 +36,9 @@ function prefixedCommand(command, args = [], wrap = "") {
         return wrap + prefix + command + " " + joinedArgs + wrap;
     return prefix + command + " " + joinedArgs;
 }
+function handleOverloadedFunction(commandEvent) { }
 class Command {
-    constructor(name, id, handler, params = [], shortDesc, desc, type = "command", parent) {
+    constructor(name, id, handler, params = [], shortDesc, desc, type = "normal", parent) {
         this.name = name;
         this.params = params;
         this.id = id;
@@ -46,13 +47,15 @@ class Command {
         this.shortDesc = shortDesc;
         this.type = type;
         this.parent = parent;
+        this.callback =
+            typeof handler === "function" ? handler : handleOverloadedFunction;
         if (name.length > 16) {
             throw new Error("Command name lengths must be below 16 characters");
         }
         if (!validNamespacedId(id)) {
             throw new Error("Namespaced IDs must only contain characters a-z, 0-9, _ or :");
         }
-        if (handler.length > 1) {
+        if (typeof handler === "function" && handler.length > 1) {
             throw new Error("Command callbacks should only take one parameter");
         }
         if (shortDesc && /\n/.test(shortDesc)) {
@@ -61,6 +64,14 @@ class Command {
         if (name.toLowerCase() !== name) {
             throw new Error("Command names should be lowercase");
         }
+        if (typeof handler !== "function") {
+            this.type = "overloaded";
+        }
+    }
+}
+class StubCommand extends Command {
+    constructor(id, handler, params = [], desc) {
+        super("", id, handler, params, undefined, desc, "stub", undefined);
     }
 }
 function registerCommands(commands) {
@@ -175,7 +186,7 @@ ${arrowRight} Type ${prefixedCommand("help", [command.name], "`")} \
 to view command help.`);
         return;
     }
-    command.handler({ params, message: msg });
+    command.callback({ params, message: msg, command });
 });
 client.login(process.env.DISCORD_TOKEN);
 //# sourceMappingURL=index.js.map
