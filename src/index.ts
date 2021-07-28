@@ -180,6 +180,16 @@ class Command {
 
     if (typeof handler !== "function") {
       this.type = "overloaded";
+
+      let parameterCounts: number[] = [];
+      handler.forEach((stub) => {
+        if (parameterCounts.includes(stub.params.length)) {
+          throw new Error(
+            "Two or more stub commands with the same parameter count cannot be attached to a single command."
+          );
+        }
+        parameterCounts.push(stub.params.length);
+      });
     }
   }
 }
