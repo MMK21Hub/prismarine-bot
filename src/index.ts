@@ -1,7 +1,7 @@
 // Initialization
 import { config } from "dotenv";
 config();
-import { Client, Message, WebhookClient } from "discord.js";
+import { Client, Message } from "discord.js";
 import Discord from "discord.js";
 const client: Client = new Discord.Client();
 import https from "https";
@@ -110,7 +110,21 @@ function prefixedCommand(command: string, args: string[] = [], wrap = "") {
   return prefix + command + " " + joinedArgs;
 }
 
-function handleOverloadedFunction(commandEvent: commandEvent) {}
+function handleOverloadedCommand(e: commandEvent) {
+  if (typeof e.command.handler === "function") {
+    e.command.callback(e);
+    console.error(
+      "handleOverloadedCommand() was called on a non-overloaded command - something must have gone wrong"
+    );
+    return;
+  }
+
+  e.command.handler.forEach((stub) => {
+    if (stub.params.length === e.params.length) {
+      stub.callback(e);
+    }
+  });
+}
 
 class Command {
   // Properties
@@ -155,7 +169,7 @@ class Command {
     this.type = type;
     this.parent = parent;
     this.callback =
-      typeof handler === "function" ? handler : handleOverloadedFunction;
+      typeof handler === "function" ? handler : handleOverloadedCommand;
 
     if (name.length > 16) {
       // This is meant to be far above what anyone would need
@@ -317,7 +331,23 @@ and for cracking the formula to check if a server has been enrolled yet.
 ${arrowRight} https://advaith.io/`
   );
 
-  registerCommands([threadRolloutStatus]);
+  function test1(e: commandEvent) {
+    e.message.reply("No params!");
+  }
+  function test2(e: commandEvent) {
+    e.message.reply("1 param!");
+  }
+  function test3(e: commandEvent) {
+    e.message.reply("2 params!");
+  }
+
+  const test = new Command("test", "test", [
+    new StubCommand("test1", test1),
+    new StubCommand("test2", test2, [{ name: "param1" }]),
+    new StubCommand("test3", test3, [{ name: "param1" }, { name: "param2" }]),
+  ]);
+
+  registerCommands([threadRolloutStatus, test]);
 }
 
 client.on("ready", () => {
@@ -358,7 +388,7 @@ client.on("message", async (msg) => {
     });
   }
 
-  if (params.length < minParams) {
+  if (command.params && params.length < minParams) {
     msg.channel.send(
       `\
 :x: **Missing one or more required parameters**
