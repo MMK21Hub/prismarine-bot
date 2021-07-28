@@ -22,7 +22,7 @@ interface commandParam {
   // TODO: Validation options
 }
 
-type cmdType = "command" | "group" | "help";
+type cmdType = "command" | "group" | "help" | "stub";
 
 const prefix = "p!";
 const prefixRegex = new RegExp(`^${prefix}`);
@@ -113,7 +113,7 @@ class Command {
   name;
   params;
   id;
-  callback;
+  handler;
   type;
   parent;
   shortDesc;
@@ -125,7 +125,7 @@ class Command {
    * you have to call {@link registerCommands} for the command to be usable.
    * @param name The name of the command. This is what the user types to execute the command.
    * @param id A unique namespaced ID for the command.
-   * @param callback The function to be run when a user executes the command.
+   * @param handler The function to be run when a user executes the command.
    * @param params The parameters, if any, that the command should take.
    * @param shortDesc A brief description to go in the command's line in the help menu.
    * @param desc All information about the command, to be used when the user asks for specific help on this command.
@@ -134,7 +134,7 @@ class Command {
   constructor(
     name: string,
     id: string,
-    callback: (e: commandEvent) => void,
+    handler: (e: commandEvent) => void,
     params: commandParam[] = [],
     shortDesc?: string,
     desc?: string,
@@ -144,7 +144,7 @@ class Command {
     this.name = name;
     this.params = params;
     this.id = id;
-    this.callback = callback;
+    this.handler = handler;
     this.desc = desc;
     this.shortDesc = shortDesc;
     this.type = type;
@@ -159,7 +159,7 @@ class Command {
         "Namespaced IDs must only contain characters a-z, 0-9, _ or :"
       );
     }
-    if (callback.length > 1) {
+    if (handler.length > 1) {
       throw new Error("Command callbacks should only take one parameter");
     }
     if (shortDesc && /\n/.test(shortDesc)) {
@@ -340,7 +340,7 @@ to view command help.`
   }
 
   // Execute the callback for the command
-  command.callback({ params, message: msg });
+  command.handler({ params, message: msg });
 });
 
 client.login(process.env.DISCORD_TOKEN);

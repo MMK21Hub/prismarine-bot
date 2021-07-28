@@ -37,11 +37,11 @@ function prefixedCommand(command, args = [], wrap = "") {
     return prefix + command + " " + joinedArgs;
 }
 class Command {
-    constructor(name, id, callback, params = [], shortDesc, desc, type = "command", parent) {
+    constructor(name, id, handler, params = [], shortDesc, desc, type = "command", parent) {
         this.name = name;
         this.params = params;
         this.id = id;
-        this.callback = callback;
+        this.handler = handler;
         this.desc = desc;
         this.shortDesc = shortDesc;
         this.type = type;
@@ -52,7 +52,7 @@ class Command {
         if (!validNamespacedId(id)) {
             throw new Error("Namespaced IDs must only contain characters a-z, 0-9, _ or :");
         }
-        if (callback.length > 1) {
+        if (handler.length > 1) {
             throw new Error("Command callbacks should only take one parameter");
         }
         if (shortDesc && /\n/.test(shortDesc)) {
@@ -175,7 +175,7 @@ ${arrowRight} Type ${prefixedCommand("help", [command.name], "`")} \
 to view command help.`);
         return;
     }
-    command.callback({ params, message: msg });
+    command.handler({ params, message: msg });
 });
 client.login(process.env.DISCORD_TOKEN);
 //# sourceMappingURL=index.js.map
