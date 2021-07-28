@@ -331,23 +331,7 @@ and for cracking the formula to check if a server has been enrolled yet.
 ${arrowRight} https://advaith.io/`
   );
 
-  function test1(e: commandEvent) {
-    e.message.reply("No params!");
-  }
-  function test2(e: commandEvent) {
-    e.message.reply("1 param!");
-  }
-  function test3(e: commandEvent) {
-    e.message.reply("2 params!");
-  }
-
-  const test = new Command("test", "test", [
-    new StubCommand("test1", test1),
-    new StubCommand("test2", test2, [{ name: "param1" }]),
-    new StubCommand("test3", test3, [{ name: "param1" }, { name: "param2" }]),
-  ]);
-
-  registerCommands([threadRolloutStatus, test]);
+  registerCommands([threadRolloutStatus]);
 }
 
 client.on("ready", () => {
