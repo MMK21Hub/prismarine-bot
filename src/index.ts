@@ -1,7 +1,7 @@
 // Initialization
 import { config } from "dotenv";
 config();
-import { Client, Message } from "discord.js";
+import { Client, Message, WebhookClient } from "discord.js";
 import Discord from "discord.js";
 const client: Client = new Discord.Client();
 
@@ -11,7 +11,13 @@ interface registry {
 
 interface commandEvent {
   message: Message;
-  args: string[];
+  params: string[];
+}
+
+interface commandParam {
+  name: string;
+  optional?: boolean;
+  // TODO: Validation options
 }
 
 type cmdType = "command" | "group" | "help";
@@ -72,6 +78,33 @@ function validNamespacedId(value: string) {
   return false;
 }
 
+/**
+ * Combines the server's current prefix, a given command and optionally arguments
+ * to create a pastable example command that can be given to the user.
+ * Useful for help/error messages.
+ * @param command The name of the command to be used
+ * @param args An optional array of any arguments to add to the command
+ * @param wrap An optional string to add to the beginning and end of the output
+ * @returns A string that combines the given arguments and the prefix
+ *
+ * @example
+ * prefixedCommand("balance")          // p!balance
+ * @example
+ * prefixedCommand("buy",["computer"]) // p!buy computer
+ * @example
+ * prefixedCommand(
+ *  "connect",
+ *  ["localhost", "8080"],
+ *  "**"
+ * )
+ * // **p!connect localhost 8080**
+ */
+function prefixedCommand(command: string, args: string[] = [], wrap = "") {
+  const joinedArgs = args.join(" ");
+  if (wrap) return wrap + prefix + command + " " + joinedArgs + wrap;
+  return prefix + command + " " + joinedArgs;
+}
+
 class Command {
   // Properties
   name;
@@ -90,7 +123,7 @@ class Command {
    * @param name The name of the command. This is what the user types to execute the command.
    * @param id A unique namespaced ID for the command.
    * @param callback The function to be run when a user executes the command.
-   * @param params How many parameters should the command take?
+   * @param params The parameters, if any, that the command should take.
    * @param shortDesc A brief description to go in the command's line in the help menu.
    * @param desc All information about the command, to be used when the user asks for specific help on this command.
    * @param type Set to "group" to create a group that can have child commands. Set to "help" to make this command into a hardcoded help command.
@@ -99,7 +132,7 @@ class Command {
     name: string,
     id: string,
     callback: (e: commandEvent) => void,
-    params = 0,
+    params: commandParam[] = [],
     shortDesc?: string,
     desc?: string,
     type: cmdType = "command",
@@ -176,7 +209,12 @@ registerCommands([
 
       message.reply(output);
     },
-    1,
+    [
+      {
+        name: "command",
+        optional: true,
+      },
+    ],
     "Displays a list of all available commands",
     undefined,
     "help"
@@ -191,14 +229,14 @@ client.on("ready", () => {
   console.error("There is no user!");
 });
 
-client.on("message", (msg) => {
+client.on("message", async (msg) => {
   // Not a command
   if (!msg.content.match(prefixRegex)) return;
 
-  // Process the message to get `commandName` and `args` out of it
+  // Process the message to get `commandName` and `params` out of it
   const splitCmd = msg.content.split(" ");
   const commandName = splitCmd[0].replace(prefixRegex, "").toLowerCase();
-  const args = splitCmd.slice(1);
+  const params = splitCmd.slice(1);
 
   // If the command the user entered doesn't exist,
   // ignore it.
@@ -211,8 +249,31 @@ client.on("message", (msg) => {
   if (!command)
     throw new Error("Could not find command with ID of " + commandId);
 
+  let minParams = 0;
+  if (command.params) {
+    // Check each param
+    command.params.forEach((param) => {
+      if (!param.optional) {
+        minParams++;
+      }
+    });
+  }
+
+  if (params.length < minParams) {
+    msg.channel.send(
+      `\
+:x: **Missing one or more required parameters**
+Expected ${minParams} parameter(s) but got ${params.length}.
+
+**\u2192** Type ${prefixedCommand("help", [command.name], "`")} \
+to view command help.`
+    );
+
+    return;
+  }
+
   // Execute the callback for the command
-  command.callback({ args, message: msg });
+  command.callback({ params, message: msg });
 });
 
 client.login(process.env.DISCORD_TOKEN);

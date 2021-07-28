@@ -27,8 +27,14 @@ function validNamespacedId(value) {
     }
     return false;
 }
+function prefixedCommand(command, args = [], wrap = "") {
+    const joinedArgs = args.join(" ");
+    if (wrap)
+        return wrap + prefix + command + " " + joinedArgs + wrap;
+    return prefix + command + " " + joinedArgs;
+}
 class Command {
-    constructor(name, id, callback, params = 0, shortDesc, desc, type = "command", parent) {
+    constructor(name, id, callback, params = [], shortDesc, desc, type = "command", parent) {
         this.name = name;
         this.params = params;
         this.id = id;
@@ -78,7 +84,12 @@ registerCommands([
         });
         output += "```";
         message.reply(output);
-    }, 1, "Displays a list of all available commands", undefined, "help"),
+    }, [
+        {
+            name: "command",
+            optional: true,
+        },
+    ], "Displays a list of all available commands", undefined, "help"),
 ]);
 client.on("ready", () => {
     if (client.user) {
@@ -87,19 +98,36 @@ client.on("ready", () => {
     }
     console.error("There is no user!");
 });
-client.on("message", (msg) => {
+client.on("message", async (msg) => {
     if (!msg.content.match(prefixRegex))
         return;
     const splitCmd = msg.content.split(" ");
     const commandName = splitCmd[0].replace(prefixRegex, "").toLowerCase();
-    const args = splitCmd.slice(1);
+    const params = splitCmd.slice(1);
     const commandId = commandNameCache.get(commandName);
     if (!commandId)
         return;
     const command = registry.commands.get(commandId);
     if (!command)
         throw new Error("Could not find command with ID of " + commandId);
-    command.callback({ args, message: msg });
+    let minParams = 0;
+    if (command.params) {
+        command.params.forEach((param) => {
+            if (!param.optional) {
+                minParams++;
+            }
+        });
+    }
+    if (params.length < minParams) {
+        msg.channel.send(`\
+:x: **Missing one or more required parameters**
+Expected ${minParams} parameter(s) but got ${params.length}.
+
+**\u2192** Type ${prefixedCommand("help", [command.name], "`")} \
+to view command help.`);
+        return;
+    }
+    command.callback({ params, message: msg });
 });
 client.login(process.env.DISCORD_TOKEN);
 //# sourceMappingURL=index.js.map
