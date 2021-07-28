@@ -64,7 +64,11 @@ function registerCommands(commands) {
     for (const command of commands) {
         registry.commands.set(command.id, command);
     }
-    commandNameCache = createCache(commands, {
+    let newCommands = [];
+    registry.commands.forEach((command) => {
+        newCommands.push(command);
+    });
+    commandNameCache = createCache(newCommands, {
         key: "name",
         value: "id",
     });

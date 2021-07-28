@@ -4,6 +4,7 @@ config();
 import { Client, Message, WebhookClient } from "discord.js";
 import Discord from "discord.js";
 const client: Client = new Discord.Client();
+import https from "https";
 
 interface registry {
   commands: Map<string, Command>;
@@ -181,7 +182,11 @@ function registerCommands(commands: Command[]) {
   }
 
   // Update the cache
-  commandNameCache = createCache(commands, {
+  let newCommands: Command[] = [];
+  registry.commands.forEach((command) => {
+    newCommands.push(command);
+  });
+  commandNameCache = createCache(newCommands, {
     key: "name",
     value: "id",
   });
