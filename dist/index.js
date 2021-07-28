@@ -92,6 +92,30 @@ class StubCommand extends Command {
         super("", id, handler, params, undefined, desc, "stub", undefined);
     }
 }
+class HelpCommand extends Command {
+    constructor() {
+        super("help", "_help", ({ message }) => {
+            let output = "**Commands:**\n```yaml\n";
+            registry.commands.forEach((cmd) => {
+                if (!cmd.shortDesc && cmd.desc) {
+                    output += `${cmd.name} # Type "${prefix}help ${cmd.name}"\n`;
+                }
+                if (!cmd.shortDesc) {
+                    output += `${cmd.name} # No description\n`;
+                    return;
+                }
+                output += `${cmd.name} - ${cmd.shortDesc}\n`;
+            });
+            output += "```";
+            message.reply(output);
+        }, [
+            {
+                name: "command",
+                optional: true,
+            },
+        ], "Displays a list of all available commands", undefined, "help");
+    }
+}
 function registerCommands(commands) {
     for (const command of commands) {
         registry.commands.set(command.id, command);
@@ -105,28 +129,7 @@ function registerCommands(commands) {
         value: "id",
     });
 }
-registerCommands([
-    new Command("help", "_help", ({ message }) => {
-        let output = "**Commands:**\n```yaml\n";
-        registry.commands.forEach((cmd) => {
-            if (!cmd.shortDesc && cmd.desc) {
-                output += `${cmd.name} # Type "${prefix}help ${cmd.name}"\n`;
-            }
-            if (!cmd.shortDesc) {
-                output += `${cmd.name} # No description\n`;
-                return;
-            }
-            output += `${cmd.name} - ${cmd.shortDesc}\n`;
-        });
-        output += "```";
-        message.reply(output);
-    }, [
-        {
-            name: "command",
-            optional: true,
-        },
-    ], "Displays a list of all available commands", undefined, "help"),
-]);
+registerCommands([new HelpCommand()]);
 {
     const threadRolloutStatus = new Command("threads", "thread_rollout_status", (e) => {
         if (e.params) {

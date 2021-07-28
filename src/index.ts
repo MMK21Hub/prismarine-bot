@@ -219,6 +219,42 @@ class StubCommand extends Command {
   }
 }
 
+class HelpCommand extends Command {
+  constructor() {
+    super(
+      "help",
+      "_help",
+      ({ message }) => {
+        let output = "**Commands:**\n```yaml\n";
+
+        registry.commands.forEach((cmd) => {
+          if (!cmd.shortDesc && cmd.desc) {
+            output += `${cmd.name} # Type "${prefix}help ${cmd.name}"\n`;
+          }
+          if (!cmd.shortDesc) {
+            output += `${cmd.name} # No description\n`;
+            return;
+          }
+          output += `${cmd.name} - ${cmd.shortDesc}\n`;
+        });
+
+        output += "```";
+
+        message.reply(output);
+      },
+      [
+        {
+          name: "command",
+          optional: true,
+        },
+      ],
+      "Displays a list of all available commands",
+      undefined,
+      "help"
+    );
+  }
+}
+
 /**
  * Registers an array of commands.
  * This lets you add new commands without restarting the bot :D
@@ -240,39 +276,7 @@ function registerCommands(commands: Command[]) {
   });
 }
 
-registerCommands([
-  new Command(
-    "help",
-    "_help",
-    ({ message }) => {
-      let output = "**Commands:**\n```yaml\n";
-
-      registry.commands.forEach((cmd) => {
-        if (!cmd.shortDesc && cmd.desc) {
-          output += `${cmd.name} # Type "${prefix}help ${cmd.name}"\n`;
-        }
-        if (!cmd.shortDesc) {
-          output += `${cmd.name} # No description\n`;
-          return;
-        }
-        output += `${cmd.name} - ${cmd.shortDesc}\n`;
-      });
-
-      output += "```";
-
-      message.reply(output);
-    },
-    [
-      {
-        name: "command",
-        optional: true,
-      },
-    ],
-    "Displays a list of all available commands",
-    undefined,
-    "help"
-  ),
-]);
+registerCommands([new HelpCommand()]);
 
 {
   const threadRolloutStatus = new Command(
