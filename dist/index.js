@@ -3,7 +3,7 @@ config();
 import Discord from "discord.js";
 const client = new Discord.Client();
 import https from "https";
-import hash from "murmurhash-v3";
+import hash from "murmurhash";
 const prefix = "p!";
 const prefixRegex = new RegExp(`^${prefix}`);
 const arrowRight = "**\u2192**";

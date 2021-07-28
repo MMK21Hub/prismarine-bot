@@ -16,6 +16,7 @@
   "author": "MMK21",
   "license": "MIT",
   "devDependencies": {
+    "@types/murmurhash": "^2.0.0",
     "typescript": "^4.3.5"
   },
   "dependencies": {

@@ -5,7 +5,7 @@ import { Client, Message, WebhookClient } from "discord.js";
 import Discord from "discord.js";
 const client: Client = new Discord.Client();
 import https from "https";
-import hash from "murmurhash-v3";
+import hash from "murmurhash";
 
 interface registry {
   commands: Map<string, Command>;
