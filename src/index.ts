@@ -225,17 +225,24 @@ class HelpCommand extends Command {
       "help",
       "_help",
       ({ message }) => {
+        let longestCmd = 0;
+        registry.commands.forEach((cmd) => {
+          if (cmd.name.length > longestCmd) longestCmd = cmd.name.length;
+        });
+
         let output = "**Commands:**\n```yaml\n";
 
         registry.commands.forEach((cmd) => {
+          const extraSpaces = " ".repeat(longestCmd - cmd.name.length);
+
           if (!cmd.shortDesc && cmd.desc) {
-            output += `${cmd.name} # Type "${prefix}help ${cmd.name}"\n`;
+            output += `${cmd.name}${extraSpaces} # Type "${prefix}help ${cmd.name}"\n`;
           }
           if (!cmd.shortDesc) {
-            output += `${cmd.name} # No description\n`;
+            output += `${cmd.name}${extraSpaces} # No description\n`;
             return;
           }
-          output += `${cmd.name} - ${cmd.shortDesc}\n`;
+          output += `${cmd.name}${extraSpaces} - ${cmd.shortDesc}\n`;
         });
 
         output += "```";
