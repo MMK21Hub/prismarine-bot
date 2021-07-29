@@ -23,7 +23,6 @@ interface commandParam {
   // TODO: Validation options
 }
 
-type cmdType = "normal" | "group" | "help" | "stub" | "overloaded";
 type commandCallback = (e: commandEvent) => void;
 
 const prefix = "p!";
@@ -132,7 +131,6 @@ class Command {
   params;
   id;
   handler;
-  type;
   parent;
   shortDesc;
   desc;
@@ -148,7 +146,6 @@ class Command {
    * @param params The parameters, if any, that the command should take.
    * @param shortDesc A brief description to go in the command's line in the help menu.
    * @param desc All information about the command, to be used when the user asks for specific help on this command.
-   * @param type Set to "group" to create a group that can have child commands. Set to "help" to make this command into a hardcoded help command.
    */
   constructor(
     name: string,
@@ -157,7 +154,6 @@ class Command {
     params: commandParam[] = [],
     shortDesc?: string,
     desc?: string,
-    type: cmdType = "normal",
     parent?: string
   ) {
     this.name = name;
@@ -166,7 +162,6 @@ class Command {
     this.handler = handler;
     this.desc = desc;
     this.shortDesc = shortDesc;
-    this.type = type;
     this.parent = parent;
     this.callback =
       typeof handler === "function" ? handler : handleOverloadedCommand;
@@ -193,8 +188,6 @@ class Command {
     }
 
     if (typeof handler !== "function") {
-      this.type = "overloaded";
-
       let parameterCounts: number[] = [];
       handler.forEach((stub) => {
         if (parameterCounts.includes(stub.params.length)) {
@@ -215,7 +208,7 @@ class StubCommand extends Command {
     params: commandParam[] = [],
     desc?: string
   ) {
-    super("", id, handler, params, undefined, desc, "stub", undefined);
+    super("", id, handler, params, undefined, desc);
   }
 }
 
@@ -255,9 +248,7 @@ class HelpCommand extends Command {
           optional: true,
         },
       ],
-      "Displays a list of all available commands",
-      undefined,
-      "help"
+      "Displays a list of all available commands"
     );
   }
 }

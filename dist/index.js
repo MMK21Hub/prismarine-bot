@@ -47,14 +47,13 @@ function handleOverloadedCommand(e) {
     });
 }
 class Command {
-    constructor(name, id, handler, params = [], shortDesc, desc, type = "normal", parent) {
+    constructor(name, id, handler, params = [], shortDesc, desc, parent) {
         this.name = name;
         this.params = params;
         this.id = id;
         this.handler = handler;
         this.desc = desc;
         this.shortDesc = shortDesc;
-        this.type = type;
         this.parent = parent;
         this.callback =
             typeof handler === "function" ? handler : handleOverloadedCommand;
@@ -74,7 +73,6 @@ class Command {
             throw new Error("Command names should be lowercase");
         }
         if (typeof handler !== "function") {
-            this.type = "overloaded";
             let parameterCounts = [];
             handler.forEach((stub) => {
                 if (parameterCounts.includes(stub.params.length)) {
@@ -87,7 +85,7 @@ class Command {
 }
 class StubCommand extends Command {
     constructor(id, handler, params = [], desc) {
-        super("", id, handler, params, undefined, desc, "stub", undefined);
+        super("", id, handler, params, undefined, desc);
     }
 }
 class HelpCommand extends Command {
@@ -117,7 +115,7 @@ class HelpCommand extends Command {
                 name: "command",
                 optional: true,
             },
-        ], "Displays a list of all available commands", undefined, "help");
+        ], "Displays a list of all available commands");
     }
 }
 function registerCommands(commands) {
