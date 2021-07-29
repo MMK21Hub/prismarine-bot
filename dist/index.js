@@ -100,7 +100,7 @@ class HelpCommand extends Command {
             registry.commands.forEach((cmd) => {
                 const extraSpaces = " ".repeat(longestCmd - cmd.name.length);
                 if (!cmd.shortDesc && cmd.desc) {
-                    output += `${cmd.name}${extraSpaces} # Type "${prefix}help ${cmd.name}"\n`;
+                    output += `${cmd.name}${extraSpaces} # Type ${prefixedCommand("help", [cmd.name])}\n`;
                 }
                 if (!cmd.shortDesc) {
                     output += `${cmd.name}${extraSpaces} # No description\n`;
