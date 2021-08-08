@@ -59,18 +59,36 @@ interface commandParam {
   // TODO: Validation options
 }
 
+type pluginScope = "command" | "script"
+
+export interface pluginMetadata {
+  enabledByDefault: boolean
+  scopes: pluginScope[]
+  pluginFormat: 1
+  searchTags?: string[]
+  friendlyName?: string
+  description?: string[]
+}
+
+interface loadedPlugin {
+  enabled: boolean
+  metadata: pluginMetadata
+}
+
 type commandCallback = (e: commandEvent) => void
 
 /* CONSTANTS */
 
 const prefix = "p!"
 const prefixRegex = new RegExp(`^${prefix}`)
+const pluginsFolder = path.resolve("plugins")
 const verbose = false
 const arrowRight = "**\u2192**"
 
 const registry: registry = {
   commands: new Map(),
 }
+const plugins: Map<string, loadedPlugin> = new Map()
 
 /** A map of command names to command IDs. Used for quick lookup of which command a user has entered. */
 let commandNameCache: Map<string, string> = new Map()
@@ -328,8 +346,31 @@ registerCommands([new HelpCommand()])
 
 /* PLUGIN MANAGEMENT */
 
-fs.readdir(path.resolve("plugins"), (err, files) => {
-  console.log(`Found ${files.length} file(s) in the plugins folder:`, files)
+function registerPlugin(filename: string) {
+  import(path.join(pluginsFolder, filename))
+    .catch(console.error)
+    .then((data) => {
+      if (!data.metadata)
+        return console.error(`\
+Could not find exported metadata in plugin file "${filename}".
+It should look like "export const metadata { ... }".`)
+      const metadata: pluginMetadata = data.metadata
+      plugins.set(filename, {
+        enabled: false,
+        metadata,
+      })
+    })
+}
+
+// Check for new plugins
+fs.readdir(pluginsFolder, (err, files) => {
+  files.forEach((file) => {
+    const extension = path.extname(file)
+    if (extension !== ".js") return
+    if (plugins.has(path.basename(file, extension))) return
+
+    registerPlugin(file)
+  })
 })
 
 /* D.JS EVENT LISTENERS */

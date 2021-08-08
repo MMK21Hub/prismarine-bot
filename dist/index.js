@@ -18,11 +18,13 @@ import("dotenv").then(({ config }) => {
 });
 const prefix = "p!";
 const prefixRegex = new RegExp(`^${prefix}`);
+const pluginsFolder = path.resolve("plugins");
 const verbose = false;
 const arrowRight = "**\u2192**";
 const registry = {
     commands: new Map(),
 };
+const plugins = new Map();
 let commandNameCache = new Map();
 function createCache(data, options) {
     const cache = new Map();
@@ -150,8 +152,30 @@ registerCommands([new HelpCommand()]);
 {
     registerCommands([]);
 }
-fs.readdir(path.resolve("plugins"), (err, files) => {
-    console.log(`Found ${files.length} file(s) in the plugins folder:`, files);
+function registerPlugin(filename) {
+    import(path.join(pluginsFolder, filename))
+        .catch(console.error)
+        .then((data) => {
+        if (!data.metadata)
+            return console.error(`\
+Could not find exported metadata in plugin file "${filename}".
+It should look like "export const metadata { ... }".`);
+        const metadata = data.metadata;
+        plugins.set(filename, {
+            enabled: false,
+            metadata,
+        });
+    });
+}
+fs.readdir(pluginsFolder, (err, files) => {
+    files.forEach((file) => {
+        const extension = path.extname(file);
+        if (extension !== ".js")
+            return;
+        if (plugins.has(path.basename(file, extension)))
+            return;
+        registerPlugin(file);
+    });
 });
 if (verbose)
     client.on("debug", console.log);
