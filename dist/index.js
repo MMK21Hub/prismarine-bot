@@ -1,16 +1,16 @@
 import fs from "fs";
 import path from "path";
 import Discord, { Intents } from "discord.js";
-import("dotenv").then(({ config }) => {
-    const err = config().error;
-    if (err)
-        throw err;
-    client.login(process.env.DISCORD_TOKEN).then(() => { });
-});
 const intents = new Intents();
 intents.add(Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.DIRECT_MESSAGE_REACTIONS);
 const client = new Discord.Client({
     intents,
+});
+import("dotenv").then(({ config }) => {
+    const err = config().error;
+    if (err)
+        throw err;
+    client.login(process.env.DISCORD_TOKEN);
 });
 const prefix = "p!";
 const prefixRegex = new RegExp(`^${prefix}`);

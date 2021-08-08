@@ -9,14 +9,6 @@ import Discord, { Intents, Client, Message } from "discord.js"
 
 /* INITIALIZATION */
 
-// Register environment vars from the .env file
-import("dotenv").then(({ config }) => {
-  const err = config().error
-  if (err) throw err
-
-  client.login(process.env.DISCORD_TOKEN).then(() => {})
-})
-
 // Set up the intents that we need
 const intents = new Intents()
 intents.add(
@@ -30,6 +22,16 @@ intents.add(
 // Create a new D.JS client
 const client: Client = new Discord.Client({
   intents,
+})
+
+// Register environment vars from the .env file
+import("dotenv").then(({ config }) => {
+  // Throw eny errors encountered while loading .env
+  const err = config().error
+  if (err) throw err
+
+  // Initialize a connection with the Discord gateway
+  client.login(process.env.DISCORD_TOKEN)
 })
 
 /* TYPESCRIPT STUFF */
@@ -380,5 +382,3 @@ to view command help.`
   // Execute the callback for the command
   command.callback({ params, message: msg, command })
 })
-
-// client.login(process.env.DISCORD_TOKEN)
