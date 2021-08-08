@@ -47,6 +47,22 @@ interface registry {
   commands: Map<string, Command>
 }
 
+export interface commandOptions {
+  /** The name of the command. This is what the user types to execute the command. */
+  name: string
+  /** A unique namespaced ID for the command. */
+  id: string
+  /** The function to be run when a user executes the command. */
+  handler: commandCallback | StubCommand[]
+  /** The parameters, if any, that the command should take. */
+  params: commandParam[]
+  /** A brief description to go in the command's line in the help menu. */
+  shortDesc?: string
+  /** All information about the command, to be used when the user asks for specific help on this command. */
+  desc?: string
+  parent?: string
+}
+
 interface commandEvent {
   message: Message
   params: string[]
@@ -201,56 +217,44 @@ class Command {
    * Creates a new `Command` object.
    * Note that this doesn't automatically register the command:
    * you have to call {@link registerCommands} for the command to be usable.
-   * @param name The name of the command. This is what the user types to execute the command.
-   * @param id A unique namespaced ID for the command.
-   * @param handler The function to be run when a user executes the command.
-   * @param params The parameters, if any, that the command should take.
-   * @param shortDesc A brief description to go in the command's line in the help menu.
-   * @param desc All information about the command, to be used when the user asks for specific help on this command.
    */
-  constructor(
-    name: string,
-    id: string,
-    handler: commandCallback | StubCommand[],
-    params: commandParam[] = [],
-    shortDesc?: string,
-    desc?: string,
-    parent?: string
-  ) {
-    this.name = name
-    this.params = params
-    this.id = id
-    this.handler = handler
-    this.desc = desc
-    this.shortDesc = shortDesc
-    this.parent = parent
+  constructor(options: commandOptions) {
+    this.name = options.name
+    this.params = options.params
+    this.id = options.id
+    this.handler = options.handler
+    this.desc = options.desc
+    this.shortDesc = options.shortDesc
+    this.parent = options.parent
     this.callback =
-      typeof handler === "function" ? handler : handleOverloadedCommand
+      typeof options.handler === "function"
+        ? options.handler
+        : handleOverloadedCommand
 
-    if (name.length > 16) {
+    if (options.name.length > 16) {
       // This is meant to be far above what anyone would need
       throw new Error("Command name lengths must be below 16 characters")
     }
-    if (!validNamespacedId(id)) {
+    if (!validNamespacedId(options.id)) {
       throw new Error(
         "Namespaced IDs must only contain characters a-z, 0-9, _ or :"
       )
     }
-    if (typeof handler === "function" && handler.length > 1) {
+    if (typeof options.handler === "function" && options.handler.length > 1) {
       throw new Error("Command callbacks should only take one parameter")
     }
-    if (shortDesc && /\n/.test(shortDesc)) {
+    if (options.shortDesc && /\n/.test(options.shortDesc)) {
       throw new Error(
         "Short descriptions cannot contain line breaks. Move details to the extended description."
       )
     }
-    if (name.toLowerCase() !== name) {
+    if (options.name.toLowerCase() !== options.name) {
       throw new Error("Command names should be lowercase")
     }
 
-    if (typeof handler !== "function") {
+    if (typeof options.handler !== "function") {
       let parameterCounts: number[] = []
-      handler.forEach((stub) => {
+      options.handler.forEach((stub) => {
         if (parameterCounts.includes(stub.params.length)) {
           throw new Error(
             "Two or more stub commands with the same parameter count cannot be attached to a single command."
@@ -269,16 +273,28 @@ class StubCommand extends Command {
     params: commandParam[] = [],
     desc?: string
   ) {
-    super("", id, handler, params, undefined, desc)
+    super({
+      name: "",
+      id,
+      handler,
+      params,
+      desc,
+    })
   }
 }
 
 class HelpCommand extends Command {
   constructor() {
-    super(
-      "help",
-      "_help",
-      ({ message }) => {
+    super({
+      name: "help",
+      id: "_help",
+      params: [
+        {
+          name: "command",
+          optional: true,
+        },
+      ],
+      handler: ({ message }) => {
         let longestCmd = 0
         registry.commands.forEach((cmd) => {
           if (cmd.name.length > longestCmd) longestCmd = cmd.name.length
@@ -306,14 +322,7 @@ class HelpCommand extends Command {
 
         message.reply(output)
       },
-      [
-        {
-          name: "command",
-          optional: true,
-        },
-      ],
-      "Displays a list of all available commands"
-    )
+    })
   }
 }
 
@@ -339,10 +348,6 @@ function registerCommands(commands: Command[]) {
 }
 
 registerCommands([new HelpCommand()])
-
-{
-  registerCommands([])
-}
 
 /* PLUGIN MANAGEMENT */
 

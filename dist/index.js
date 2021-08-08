@@ -64,34 +64,36 @@ function handleOverloadedCommand(e) {
     });
 }
 class Command {
-    constructor(name, id, handler, params = [], shortDesc, desc, parent) {
-        this.name = name;
-        this.params = params;
-        this.id = id;
-        this.handler = handler;
-        this.desc = desc;
-        this.shortDesc = shortDesc;
-        this.parent = parent;
+    constructor(options) {
+        this.name = options.name;
+        this.params = options.params;
+        this.id = options.id;
+        this.handler = options.handler;
+        this.desc = options.desc;
+        this.shortDesc = options.shortDesc;
+        this.parent = options.parent;
         this.callback =
-            typeof handler === "function" ? handler : handleOverloadedCommand;
-        if (name.length > 16) {
+            typeof options.handler === "function"
+                ? options.handler
+                : handleOverloadedCommand;
+        if (options.name.length > 16) {
             throw new Error("Command name lengths must be below 16 characters");
         }
-        if (!validNamespacedId(id)) {
+        if (!validNamespacedId(options.id)) {
             throw new Error("Namespaced IDs must only contain characters a-z, 0-9, _ or :");
         }
-        if (typeof handler === "function" && handler.length > 1) {
+        if (typeof options.handler === "function" && options.handler.length > 1) {
             throw new Error("Command callbacks should only take one parameter");
         }
-        if (shortDesc && /\n/.test(shortDesc)) {
+        if (options.shortDesc && /\n/.test(options.shortDesc)) {
             throw new Error("Short descriptions cannot contain line breaks. Move details to the extended description.");
         }
-        if (name.toLowerCase() !== name) {
+        if (options.name.toLowerCase() !== options.name) {
             throw new Error("Command names should be lowercase");
         }
-        if (typeof handler !== "function") {
+        if (typeof options.handler !== "function") {
             let parameterCounts = [];
-            handler.forEach((stub) => {
+            options.handler.forEach((stub) => {
                 if (parameterCounts.includes(stub.params.length)) {
                     throw new Error("Two or more stub commands with the same parameter count cannot be attached to a single command.");
                 }
@@ -102,37 +104,48 @@ class Command {
 }
 class StubCommand extends Command {
     constructor(id, handler, params = [], desc) {
-        super("", id, handler, params, undefined, desc);
+        super({
+            name: "",
+            id,
+            handler,
+            params,
+            desc,
+        });
     }
 }
 class HelpCommand extends Command {
     constructor() {
-        super("help", "_help", ({ message }) => {
-            let longestCmd = 0;
-            registry.commands.forEach((cmd) => {
-                if (cmd.name.length > longestCmd)
-                    longestCmd = cmd.name.length;
-            });
-            let output = "**Commands:**\n```yaml\n";
-            registry.commands.forEach((cmd) => {
-                const extraSpaces = " ".repeat(longestCmd - cmd.name.length);
-                if (!cmd.shortDesc && cmd.desc) {
-                    output += `${cmd.name}${extraSpaces} # Type ${prefixedCommand("help", [cmd.name])}\n`;
-                }
-                if (!cmd.shortDesc) {
-                    output += `${cmd.name}${extraSpaces} # No description\n`;
-                    return;
-                }
-                output += `${cmd.name}${extraSpaces} - ${cmd.shortDesc}\n`;
-            });
-            output += "```";
-            message.reply(output);
-        }, [
-            {
-                name: "command",
-                optional: true,
+        super({
+            name: "help",
+            id: "_help",
+            params: [
+                {
+                    name: "command",
+                    optional: true,
+                },
+            ],
+            handler: ({ message }) => {
+                let longestCmd = 0;
+                registry.commands.forEach((cmd) => {
+                    if (cmd.name.length > longestCmd)
+                        longestCmd = cmd.name.length;
+                });
+                let output = "**Commands:**\n```yaml\n";
+                registry.commands.forEach((cmd) => {
+                    const extraSpaces = " ".repeat(longestCmd - cmd.name.length);
+                    if (!cmd.shortDesc && cmd.desc) {
+                        output += `${cmd.name}${extraSpaces} # Type ${prefixedCommand("help", [cmd.name])}\n`;
+                    }
+                    if (!cmd.shortDesc) {
+                        output += `${cmd.name}${extraSpaces} # No description\n`;
+                        return;
+                    }
+                    output += `${cmd.name}${extraSpaces} - ${cmd.shortDesc}\n`;
+                });
+                output += "```";
+                message.reply(output);
             },
-        ], "Displays a list of all available commands");
+        });
     }
 }
 function registerCommands(commands) {
@@ -149,9 +162,6 @@ function registerCommands(commands) {
     });
 }
 registerCommands([new HelpCommand()]);
-{
-    registerCommands([]);
-}
 function registerPlugin(filename) {
     import(path.join(pluginsFolder, filename))
         .catch(console.error)
