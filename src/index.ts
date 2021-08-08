@@ -6,6 +6,7 @@ import Discord from "discord.js"
 const client: Client = new Discord.Client()
 import https from "https"
 import fs from "fs"
+import path from "path"
 
 interface registry {
   commands: Map<string, Command>
@@ -282,6 +283,10 @@ registerCommands([new HelpCommand()])
 {
   registerCommands([])
 }
+
+fs.readdir(path.resolve("plugins"), (err, files) => {
+  console.log(`Found ${files.length} file(s) in the plugins folder:`, files)
+})
 
 client.on("ready", () => {
   if (client.user) {

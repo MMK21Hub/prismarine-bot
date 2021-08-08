@@ -2,6 +2,8 @@ import { config } from "dotenv";
 config();
 import Discord from "discord.js";
 const client = new Discord.Client();
+import fs from "fs";
+import path from "path";
 const prefix = "p!";
 const prefixRegex = new RegExp(`^${prefix}`);
 const arrowRight = "**\u2192**";
@@ -135,6 +137,9 @@ registerCommands([new HelpCommand()]);
 {
     registerCommands([]);
 }
+fs.readdir(path.resolve("plugins"), (err, files) => {
+    console.log(`Found ${files.length} file(s) in the plugins folder:`, files);
+});
 client.on("ready", () => {
     if (client.user) {
         console.log(`Logged in as ${client.user.tag}`);
