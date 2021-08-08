@@ -5,6 +5,10 @@ const intents = new Intents();
 intents.add(Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.DIRECT_MESSAGE_REACTIONS);
 const client = new Discord.Client({
     intents,
+    partials: ["CHANNEL"],
+    allowedMentions: {
+        repliedUser: false,
+    },
 });
 import("dotenv").then(({ config }) => {
     const err = config().error;
@@ -14,6 +18,7 @@ import("dotenv").then(({ config }) => {
 });
 const prefix = "p!";
 const prefixRegex = new RegExp(`^${prefix}`);
+const verbose = false;
 const arrowRight = "**\u2192**";
 const registry = {
     commands: new Map(),
@@ -148,7 +153,8 @@ registerCommands([new HelpCommand()]);
 fs.readdir(path.resolve("plugins"), (err, files) => {
     console.log(`Found ${files.length} file(s) in the plugins folder:`, files);
 });
-client.on("debug", console.log);
+if (verbose)
+    client.on("debug", console.log);
 client.on("ready", () => {
     if (client.user) {
         console.log(`Logged in as ${client.user.tag}`);
@@ -156,7 +162,7 @@ client.on("ready", () => {
     }
     console.error("There is no user!");
 });
-client.on("message", async (msg) => {
+client.on("messageCreate", async (msg) => {
     if (!msg.content.match(prefixRegex))
         return;
     const splitCmd = msg.content.split(" ");

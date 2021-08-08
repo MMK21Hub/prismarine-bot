@@ -21,7 +21,14 @@ intents.add(
 
 // Create a new D.JS client
 const client: Client = new Discord.Client({
+  // Specifies the events that the bot receives
   intents,
+  // Lets the bot work in DMs
+  partials: ["CHANNEL"],
+  // Stops replies from pinging the user
+  allowedMentions: {
+    repliedUser: false,
+  },
 })
 
 // Register environment vars from the .env file
@@ -58,6 +65,7 @@ type commandCallback = (e: commandEvent) => void
 
 const prefix = "p!"
 const prefixRegex = new RegExp(`^${prefix}`)
+const verbose = false
 const arrowRight = "**\u2192**"
 
 const registry: registry = {
@@ -326,7 +334,7 @@ fs.readdir(path.resolve("plugins"), (err, files) => {
 
 /* D.JS EVENT LISTENERS */
 
-client.on("debug", console.log)
+if (verbose) client.on("debug", console.log)
 
 client.on("ready", () => {
   if (client.user) {
@@ -336,7 +344,7 @@ client.on("ready", () => {
   console.error("There is no user!")
 })
 
-client.on("message", async (msg) => {
+client.on("messageCreate", async (msg) => {
   // Not a command
   if (!msg.content.match(prefixRegex)) return
 
