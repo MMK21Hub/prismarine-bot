@@ -1,9 +1,12 @@
-import { config } from "dotenv";
-config();
-import Discord from "discord.js";
-const client = new Discord.Client();
 import fs from "fs";
 import path from "path";
+import Discord, { Intents } from "discord.js";
+import("dotenv").then(({ config }) => config());
+const intents = new Intents();
+intents.add(Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.DIRECT_MESSAGE_REACTIONS);
+const client = new Discord.Client({
+    intents,
+});
 const prefix = "p!";
 const prefixRegex = new RegExp(`^${prefix}`);
 const arrowRight = "**\u2192**";

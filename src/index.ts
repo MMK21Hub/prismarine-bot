@@ -1,12 +1,33 @@
-// Initialization
-import { config } from "dotenv"
-config()
-import { Client, Message } from "discord.js"
-import Discord from "discord.js"
-const client: Client = new Discord.Client()
-import https from "https"
+/* IMPORTS */
+
+// Builtins
 import fs from "fs"
 import path from "path"
+
+// Discord.js + extra typings
+import Discord, { Intents, Client, Message } from "discord.js"
+
+/* INITIALIZATION */
+
+// Register environment vars from the .env file
+import("dotenv").then(({ config }) => config())
+
+// Set up the intents that we need
+const intents = new Intents()
+intents.add(
+  Intents.FLAGS.GUILDS,
+  Intents.FLAGS.GUILD_MESSAGES,
+  Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+  Intents.FLAGS.DIRECT_MESSAGES,
+  Intents.FLAGS.DIRECT_MESSAGE_REACTIONS
+)
+
+// Create a new D.JS client
+const client: Client = new Discord.Client({
+  intents,
+})
+
+/* TYPESCRIPT STUFF */
 
 interface registry {
   commands: Map<string, Command>
@@ -26,6 +47,8 @@ interface commandParam {
 
 type commandCallback = (e: commandEvent) => void
 
+/* CONSTANTS */
+
 const prefix = "p!"
 const prefixRegex = new RegExp(`^${prefix}`)
 const arrowRight = "**\u2192**"
@@ -36,6 +59,8 @@ const registry: registry = {
 
 /** A map of command names to command IDs. Used for quick lookup of which command a user has entered. */
 let commandNameCache: Map<string, string> = new Map()
+
+/* UTILITY FUNCTIONS */
 
 /**
  * Generates a map that allows for quick lookup of a specific property
@@ -109,6 +134,8 @@ function prefixedCommand(command: string, args: string[] = [], wrap = "") {
   if (wrap) return wrap + prefix + command + " " + joinedArgs + wrap
   return prefix + command + " " + joinedArgs
 }
+
+/* COMMAND MANAGEMENT */
 
 function handleOverloadedCommand(e: commandEvent) {
   if (typeof e.command.handler === "function") {
@@ -284,9 +311,13 @@ registerCommands([new HelpCommand()])
   registerCommands([])
 }
 
+/* PLUGIN MANAGEMENT */
+
 fs.readdir(path.resolve("plugins"), (err, files) => {
   console.log(`Found ${files.length} file(s) in the plugins folder:`, files)
 })
+
+/* D.JS EVENT LISTENERS */
 
 client.on("ready", () => {
   if (client.user) {
