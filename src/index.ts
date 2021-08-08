@@ -10,7 +10,12 @@ import Discord, { Intents, Client, Message } from "discord.js"
 /* INITIALIZATION */
 
 // Register environment vars from the .env file
-import("dotenv").then(({ config }) => config())
+import("dotenv").then(({ config }) => {
+  const err = config().error
+  if (err) throw err
+
+  client.login(process.env.DISCORD_TOKEN).then(() => {})
+})
 
 // Set up the intents that we need
 const intents = new Intents()
@@ -319,6 +324,8 @@ fs.readdir(path.resolve("plugins"), (err, files) => {
 
 /* D.JS EVENT LISTENERS */
 
+client.on("debug", console.log)
+
 client.on("ready", () => {
   if (client.user) {
     console.log(`Logged in as ${client.user.tag}`)
@@ -374,4 +381,4 @@ to view command help.`
   command.callback({ params, message: msg, command })
 })
 
-client.login(process.env.DISCORD_TOKEN)
+// client.login(process.env.DISCORD_TOKEN)
