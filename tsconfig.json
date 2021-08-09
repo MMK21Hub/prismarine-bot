@@ -22,10 +22,16 @@
     "resolveJsonModule": true,
     "baseUrl": "."
   },
-  "exclude": [
-    "node_modules"
-  ],
   "include": [
     "./src/**/*.ts"
-  ]
+  ],
+  "exclude": [
+    "node_modules",
+    // "./src/plugins/**/*.ts"
+  ],
+  // "references": [
+  //   {
+  //     "path": "config/plugins.tsconfig.json"
+  //   }
+  // ]
 }

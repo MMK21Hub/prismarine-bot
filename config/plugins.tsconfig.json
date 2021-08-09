@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "es2020",
+    "lib": ["es2020"],
+    "skipLibCheck": true,
+    "sourceMap": false,
+    "outDir": "../plugins",
+    "moduleResolution": "node",
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "esModuleInterop": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "composite": true,
+    "baseUrl": "..",
+    "rootDir": ".."
+  },
+  "include": ["../src/plugins/**/*.ts"],
+  "exclude": []
+}

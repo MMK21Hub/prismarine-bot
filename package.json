@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "tsc --watch"
+    "start": "tsc-watch --onSuccess ./scripts/fix-plugin-output.sh",
+    "build": "tsc --build --verbose"
   },
   "keywords": [
     "discord",
@@ -26,6 +27,7 @@
     "mineflayer": "^3.9.0",
     "mineflayer-tps": "^1.0.1",
     "murmurhash-v3": "^1.0.2",
-    "prismarine-viewer": "^1.19.3"
+    "prismarine-viewer": "^1.19.3",
+    "tsc-watch": "^4.4.0"
   }
 }
