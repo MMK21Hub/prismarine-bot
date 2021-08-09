@@ -75,9 +75,13 @@ interface commandParam {
   // TODO: Validation options
 }
 
+export interface plugin {
+  metadata: pluginMetadata
+}
+
 type pluginScope = "command" | "script"
 
-export interface pluginMetadata {
+interface pluginMetadata {
   enabledByDefault: boolean
   scopes: pluginScope[]
   pluginFormat: 1
@@ -354,12 +358,11 @@ registerCommands([new HelpCommand()])
 function registerPlugin(filename: string) {
   import(path.join(pluginsFolder, filename))
     .catch(console.error)
-    .then((data) => {
-      if (!data.metadata)
+    .then(({ default: plugin }: { default: plugin }) => {
+      if (!plugin.metadata)
         return console.error(`\
-Could not find exported metadata in plugin file "${filename}".
-It should look like "export const metadata { ... }".`)
-      const metadata: pluginMetadata = data.metadata
+Could not find exported metadata in plugin file "${filename}".`)
+      const metadata = plugin.metadata
       plugins.set(filename, {
         enabled: false,
         metadata,
