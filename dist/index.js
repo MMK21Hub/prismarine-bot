@@ -165,7 +165,7 @@ registerCommands([new HelpCommand()]);
 function registerPlugin(filename) {
     import(path.join(pluginsFolder, filename))
         .catch(console.error)
-        .then(({ default: plugin }) => {
+        .then((plugin) => {
         if (!plugin.metadata)
             return console.error(`\
 Could not find exported metadata in plugin file "${filename}".`);

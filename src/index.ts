@@ -88,6 +88,7 @@ interface pluginMetadata {
   searchTags?: string[]
   friendlyName?: string
   description?: string[]
+  version?: string
 }
 
 interface loadedPlugin {
@@ -358,7 +359,7 @@ registerCommands([new HelpCommand()])
 function registerPlugin(filename: string) {
   import(path.join(pluginsFolder, filename))
     .catch(console.error)
-    .then(({ default: plugin }: { default: plugin }) => {
+    .then((plugin: plugin) => {
       if (!plugin.metadata)
         return console.error(`\
 Could not find exported metadata in plugin file "${filename}".`)
