@@ -77,6 +77,12 @@ interface commandParam {
 
 export interface plugin {
   metadata: pluginMetadata
+  events?: {
+    load?: () => void
+    unload?: () => void
+    firstLoad?: () => void
+    upgrade?: (from: string, to: string) => void
+  }
 }
 
 type pluginScope = "command" | "script"
@@ -91,9 +97,9 @@ interface pluginMetadata {
   version?: string
 }
 
-interface loadedPlugin {
+interface registeredPlugin {
   enabled: boolean
-  metadata: pluginMetadata
+  data: plugin
 }
 
 type commandCallback = (e: commandEvent) => void
@@ -109,7 +115,7 @@ const arrowRight = "**\u2192**"
 const registry: registry = {
   commands: new Map(),
 }
-const plugins: Map<string, loadedPlugin> = new Map()
+const plugins: Map<string, registeredPlugin> = new Map()
 
 /** A map of command names to command IDs. Used for quick lookup of which command a user has entered. */
 let commandNameCache: Map<string, string> = new Map()
@@ -357,17 +363,19 @@ registerCommands([new HelpCommand()])
 /* PLUGIN MANAGEMENT */
 
 function registerPlugin(filename: string) {
-  import(path.join(pluginsFolder, filename))
+  return import(path.join(pluginsFolder, filename))
     .catch(console.error)
-    .then((plugin: plugin) => {
+    .then(({ default: plugin }: { default: plugin }) => {
       if (!plugin.metadata)
         return console.error(`\
 Could not find exported metadata in plugin file "${filename}".`)
       const metadata = plugin.metadata
-      plugins.set(filename, {
-        enabled: false,
-        metadata,
-      })
+      return plugins
+        .set(filename, {
+          enabled: false,
+          data: plugin,
+        })
+        .get(filename)
     })
 }
 
@@ -378,9 +386,22 @@ fs.readdir(pluginsFolder, (err, files) => {
     if (extension !== ".js") return
     if (plugins.has(path.basename(file, extension))) return
 
-    registerPlugin(file)
+    registerPlugin(file).then((plugin) => {
+      // Load any plugins that should be loaded
+      if (!plugin?.data.metadata.enabledByDefault) return
+      loadPlugin(plugin)
+    })
   })
 })
+
+function loadPlugin(plugin: registeredPlugin) {
+  if (plugin.enabled) return
+
+  // Execute the `events.load` callback (if present)
+  plugin.data.events?.load?.()
+  // Mark the plugin as enabled
+  plugin.enabled = true
+}
 
 /* D.JS EVENT LISTENERS */
 

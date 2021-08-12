@@ -163,17 +163,19 @@ function registerCommands(commands) {
 }
 registerCommands([new HelpCommand()]);
 function registerPlugin(filename) {
-    import(path.join(pluginsFolder, filename))
+    return import(path.join(pluginsFolder, filename))
         .catch(console.error)
-        .then((plugin) => {
+        .then(({ default: plugin }) => {
         if (!plugin.metadata)
             return console.error(`\
 Could not find exported metadata in plugin file "${filename}".`);
         const metadata = plugin.metadata;
-        plugins.set(filename, {
+        return plugins
+            .set(filename, {
             enabled: false,
-            metadata,
-        });
+            data: plugin,
+        })
+            .get(filename);
     });
 }
 fs.readdir(pluginsFolder, (err, files) => {
@@ -183,9 +185,19 @@ fs.readdir(pluginsFolder, (err, files) => {
             return;
         if (plugins.has(path.basename(file, extension)))
             return;
-        registerPlugin(file);
+        registerPlugin(file).then((plugin) => {
+            if (!plugin?.data.metadata.enabledByDefault)
+                return;
+            loadPlugin(plugin);
+        });
     });
 });
+function loadPlugin(plugin) {
+    if (plugin.enabled)
+        return;
+    plugin.data.events?.load?.();
+    plugin.enabled = true;
+}
 if (verbose)
     client.on("debug", console.log);
 client.on("ready", () => {
