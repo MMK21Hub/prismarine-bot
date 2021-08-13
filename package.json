@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "tsc-watch --onSuccess ./scripts/fix-plugin-output.sh",
+    "start": "tsc-watch --onSuccess ./scripts/postbuild.sh",
     "build": "tsc --build --verbose"
   },
   "keywords": [

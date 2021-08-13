@@ -63,10 +63,10 @@ function handleOverloadedCommand(e) {
         }
     });
 }
-class Command {
+export class Command {
     constructor(options) {
         this.name = options.name;
-        this.params = options.params;
+        this.params = options.params || [];
         this.id = options.id;
         this.handler = options.handler;
         this.desc = options.desc;
@@ -148,7 +148,7 @@ class HelpCommand extends Command {
         });
     }
 }
-function registerCommands(commands) {
+export function registerCommands(commands) {
     for (const command of commands) {
         registry.commands.set(command.id, command);
     }
@@ -178,6 +178,15 @@ Could not find exported metadata in plugin file "${filename}".`);
             .get(filename);
     });
 }
+function loadPlugin(plugin) {
+    if (plugin.enabled)
+        return;
+    if (plugin.data.events?.load) {
+        const cb = eval(plugin.data.events.load.toString());
+        cb();
+    }
+    plugin.enabled = true;
+}
 fs.readdir(pluginsFolder, (err, files) => {
     files.forEach((file) => {
         const extension = path.extname(file);
@@ -192,12 +201,6 @@ fs.readdir(pluginsFolder, (err, files) => {
         });
     });
 });
-function loadPlugin(plugin) {
-    if (plugin.enabled)
-        return;
-    plugin.data.events?.load?.();
-    plugin.enabled = true;
-}
 if (verbose)
     client.on("debug", console.log);
 client.on("ready", () => {

@@ -55,7 +55,7 @@ export interface commandOptions {
   /** The function to be run when a user executes the command. */
   handler: commandCallback | StubCommand[]
   /** The parameters, if any, that the command should take. */
-  params: commandParam[]
+  params?: commandParam[]
   /** A brief description to go in the command's line in the help menu. */
   shortDesc?: string
   /** All information about the command, to be used when the user asks for specific help on this command. */
@@ -213,10 +213,10 @@ function handleOverloadedCommand(e: commandEvent) {
   })
 }
 
-class Command {
+export class Command {
   // Properties
   name
-  params
+  params: commandParam[]
   id
   handler
   parent
@@ -231,7 +231,7 @@ class Command {
    */
   constructor(options: commandOptions) {
     this.name = options.name
-    this.params = options.params
+    this.params = options.params || []
     this.id = options.id
     this.handler = options.handler
     this.desc = options.desc
@@ -341,7 +341,7 @@ class HelpCommand extends Command {
  * Registers an array of commands.
  * This lets you add new commands without restarting the bot :D
  */
-function registerCommands(commands: Command[]) {
+export function registerCommands(commands: Command[]) {
   // Add each command to the registry
   for (const command of commands) {
     registry.commands.set(command.id, command)
@@ -379,6 +379,19 @@ Could not find exported metadata in plugin file "${filename}".`)
     })
 }
 
+function loadPlugin(plugin: registeredPlugin) {
+  if (plugin.enabled) return
+
+  // Execute the `events.load` callback (if present)
+  if (plugin.data.events?.load) {
+    const cb = eval(plugin.data.events.load.toString())
+    cb()
+  }
+
+  // Mark the plugin as enabled
+  plugin.enabled = true
+}
+
 // Check for new plugins
 fs.readdir(pluginsFolder, (err, files) => {
   files.forEach((file) => {
@@ -393,15 +406,6 @@ fs.readdir(pluginsFolder, (err, files) => {
     })
   })
 })
-
-function loadPlugin(plugin: registeredPlugin) {
-  if (plugin.enabled) return
-
-  // Execute the `events.load` callback (if present)
-  plugin.data.events?.load?.()
-  // Mark the plugin as enabled
-  plugin.enabled = true
-}
 
 /* D.JS EVENT LISTENERS */
 
