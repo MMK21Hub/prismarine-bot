@@ -1,10 +1,10 @@
 import fs from "fs";
 import path from "path";
 import Discord, { Intents } from "discord.js";
-import { stripIndent } from "common-tags";
+import { stripIndent as $ } from "common-tags";
 const intents = new Intents();
 intents.add(Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.DIRECT_MESSAGE_REACTIONS);
-const client = new Discord.Client({
+export const client = new Discord.Client({
     intents,
     partials: ["CHANNEL"],
     allowedMentions: {
@@ -168,7 +168,7 @@ function registerPlugin(filename) {
         .catch(console.error)
         .then(({ default: plugin }) => {
         if (!plugin.metadata)
-            return console.error(stripIndent `
+            return console.error($ `
           Could not find exported metadata in plugin file "${filename}".
         `);
         const metadata = plugin.metadata;
@@ -233,7 +233,7 @@ client.on("messageCreate", async (msg) => {
         });
     }
     if (command.params && params.length < minParams) {
-        msg.channel.send(stripIndent `
+        msg.channel.send($ `
       :x: **Missing one or more required parameters**
       Expected ${minParams} parameter(s) but got ${params.length}.
 

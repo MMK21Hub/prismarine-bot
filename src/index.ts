@@ -8,7 +8,7 @@ import path from "path"
 import Discord, { Intents, Client, Message } from "discord.js"
 
 // Template literal utils
-import { stripIndent } from "common-tags"
+import { stripIndent as $ } from "common-tags"
 
 /* INITIALIZATION */
 
@@ -23,7 +23,7 @@ intents.add(
 )
 
 // Create a new D.JS client
-const client: Client = new Discord.Client({
+export const client: Client = new Discord.Client({
   // Specifies the events that the bot receives
   intents,
   // Lets the bot work in DMs
@@ -370,7 +370,7 @@ function registerPlugin(filename: string) {
     .catch(console.error)
     .then(({ default: plugin }: { default: plugin }) => {
       if (!plugin.metadata)
-        return console.error(stripIndent`
+        return console.error($`
           Could not find exported metadata in plugin file "${filename}".
         `)
       const metadata = plugin.metadata
@@ -454,7 +454,7 @@ client.on("messageCreate", async (msg) => {
   }
 
   if (command.params && params.length < minParams) {
-    msg.channel.send(stripIndent`
+    msg.channel.send($`
       :x: **Missing one or more required parameters**
       Expected ${minParams} parameter(s) but got ${params.length}.
 

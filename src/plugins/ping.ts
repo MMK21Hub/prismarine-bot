@@ -1,4 +1,4 @@
-import { plugin, Command, registerCommands } from "../index"
+import { plugin, Command, registerCommands, client } from "../index"
 
 const ping: plugin = {
   metadata: {
@@ -12,8 +12,25 @@ const ping: plugin = {
         new Command({
           name: "ping",
           id: "ping",
-          handler: (e) => {
-            e.message.reply("Pong!")
+          handler: async (e) => {
+            const { bold } = await import("@discordjs/builders")
+            const { stripIndents: $ } = await import("common-tags")
+
+            e.message
+              .reply({
+                content: $`
+                  :ping_pong: ${bold("Pong!")}
+                  Websocket heartbeat: ${client.ws.ping}ms
+                `,
+              })
+              .then((msg) => {
+                const roundtrip =
+                  msg.createdTimestamp - e.message.createdTimestamp
+                msg.edit($`
+                    ${msg.content}
+                    API roundtrip: ${roundtrip}ms
+                  `)
+              })
           },
         }),
       ])

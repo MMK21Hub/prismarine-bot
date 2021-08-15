@@ -1,4 +1,5 @@
-import { Message } from "discord.js";
+import { Client, Message } from "discord.js";
+export declare const client: Client;
 export interface commandOptions {
     name: string;
     id: string;
