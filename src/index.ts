@@ -7,6 +7,9 @@ import path from "path"
 // Discord.js + extra typings
 import Discord, { Intents, Client, Message } from "discord.js"
 
+// Template literal utils
+import { stripIndent } from "common-tags"
+
 /* INITIALIZATION */
 
 // Set up the intents that we need
@@ -367,8 +370,9 @@ function registerPlugin(filename: string) {
     .catch(console.error)
     .then(({ default: plugin }: { default: plugin }) => {
       if (!plugin.metadata)
-        return console.error(`\
-Could not find exported metadata in plugin file "${filename}".`)
+        return console.error(stripIndent`
+          Could not find exported metadata in plugin file "${filename}".
+        `)
       const metadata = plugin.metadata
       return plugins
         .set(filename, {
@@ -450,14 +454,13 @@ client.on("messageCreate", async (msg) => {
   }
 
   if (command.params && params.length < minParams) {
-    msg.channel.send(
-      `\
-:x: **Missing one or more required parameters**
-Expected ${minParams} parameter(s) but got ${params.length}.
+    msg.channel.send(stripIndent`
+      :x: **Missing one or more required parameters**
+      Expected ${minParams} parameter(s) but got ${params.length}.
 
-${arrowRight} Type ${prefixedCommand("help", [command.name], "`")} \
-to view command help.`
-    )
+      ${arrowRight} Type ${prefixedCommand("help", [command.name], "`")} \
+      to view command help.
+    `)
 
     return
   }

@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import Discord, { Intents } from "discord.js";
+import { stripIndent } from "common-tags";
 const intents = new Intents();
 intents.add(Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.DIRECT_MESSAGE_REACTIONS);
 const client = new Discord.Client({
@@ -167,8 +168,9 @@ function registerPlugin(filename) {
         .catch(console.error)
         .then(({ default: plugin }) => {
         if (!plugin.metadata)
-            return console.error(`\
-Could not find exported metadata in plugin file "${filename}".`);
+            return console.error(stripIndent `
+          Could not find exported metadata in plugin file "${filename}".
+        `);
         const metadata = plugin.metadata;
         return plugins
             .set(filename, {
@@ -231,12 +233,13 @@ client.on("messageCreate", async (msg) => {
         });
     }
     if (command.params && params.length < minParams) {
-        msg.channel.send(`\
-:x: **Missing one or more required parameters**
-Expected ${minParams} parameter(s) but got ${params.length}.
+        msg.channel.send(stripIndent `
+      :x: **Missing one or more required parameters**
+      Expected ${minParams} parameter(s) but got ${params.length}.
 
-${arrowRight} Type ${prefixedCommand("help", [command.name], "`")} \
-to view command help.`);
+      ${arrowRight} Type ${prefixedCommand("help", [command.name], "`")} \
+      to view command help.
+    `);
         return;
     }
     command.callback({ params, message: msg, command });
