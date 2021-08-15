@@ -13,8 +13,21 @@ const ping: plugin = {
           name: "ping",
           id: "ping",
           handler: async (e) => {
+            const {
+              MessageActionRow,
+              MessageButton,
+              ApplicationCommandPermissionsManager,
+            } = await import("discord.js")
             const { bold } = await import("@discordjs/builders")
             const { stripIndents: $ } = await import("common-tags")
+
+            const button = new MessageActionRow().addComponents(
+              new MessageButton()
+                .setCustomId("custom/ping:refresh")
+                .setLabel("Refresh")
+                .setStyle("PRIMARY")
+                .setEmoji("🔁")
+            )
 
             e.message
               .reply({
@@ -22,6 +35,7 @@ const ping: plugin = {
                   :ping_pong: ${bold("Pong!")}
                   Websocket heartbeat: ${client.ws.ping}ms
                 `,
+                components: [button],
               })
               .then((msg) => {
                 const roundtrip =
