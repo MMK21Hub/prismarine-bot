@@ -33,7 +33,7 @@ interface pluginMetadata {
     pluginFormat: 1;
     searchTags?: string[];
     friendlyName?: string;
-    description?: string[];
+    description?: string;
     version?: string;
 }
 declare type commandCallback = (e: commandEvent) => void;
