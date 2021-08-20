@@ -91,33 +91,6 @@ interface commandParam {
 
 type commandCallback = (e: commandEvent) => void
 
-export interface plugin {
-  metadata: pluginMetadata
-  events?: {
-    load?: () => void
-    unload?: () => void
-    firstLoad?: () => void
-    upgrade?: (from: string, to: string) => void
-  }
-}
-
-type pluginScope = "command" | "custom-interaction" | "script"
-
-interface pluginMetadata {
-  enabledByDefault: boolean
-  scopes: pluginScope[]
-  pluginFormat: 1
-  searchTags?: string[]
-  friendlyName?: string
-  description?: string
-  version?: string
-}
-
-interface registeredPlugin {
-  enabled: boolean
-  data: plugin
-}
-
 type interactionSource =
   | "button"
   | "context-menu"
@@ -142,7 +115,6 @@ interface customOtherInteraction {
 
 const prefix = "p!"
 const prefixRegex = new RegExp(`^${prefix}`)
-const pluginsFolder = path.resolve("plugins")
 let verbose = false
 const arrowRight = "**\u2192**"
 
@@ -150,7 +122,6 @@ const registry: registry = {
   commands: new Map(),
   customInteractions: new Map(),
 }
-const plugins: Map<string, registeredPlugin> = new Map()
 
 /** A map of command names to command IDs. Used for quick lookup of which command a user has entered. */
 let commandNameCache: Map<string, string> = new Map()
@@ -394,54 +365,6 @@ export function registerCommands(commands: Command[]) {
 }
 
 registerCommands([new HelpCommand()])
-
-/* PLUGIN MANAGEMENT */
-
-function registerPlugin(filename: string) {
-  return import(path.join(pluginsFolder, filename))
-    .catch(console.error)
-    .then(({ default: plugin }: { default: plugin }) => {
-      if (!plugin.metadata)
-        return console.error($`
-          Could not find exported metadata in plugin file "${filename}".
-        `)
-      const metadata = plugin.metadata
-      return plugins
-        .set(filename, {
-          enabled: false,
-          data: plugin,
-        })
-        .get(filename)
-    })
-}
-
-function loadPlugin(plugin: registeredPlugin) {
-  if (plugin.enabled) return
-
-  // Execute the `events.load` callback (if present)
-  if (plugin.data.events?.load) {
-    const cb = eval(plugin.data.events.load.toString())
-    cb()
-  }
-
-  // Mark the plugin as enabled
-  plugin.enabled = true
-}
-
-// Check for new plugins
-fs.readdir(pluginsFolder, (err, files) => {
-  files.forEach((file) => {
-    const extension = path.extname(file)
-    if (extension !== ".js") return
-    if (plugins.has(path.basename(file, extension))) return
-
-    registerPlugin(file).then((plugin) => {
-      // Load any plugins that should be loaded
-      if (!plugin?.data.metadata.enabledByDefault) return
-      loadPlugin(plugin)
-    })
-  })
-})
 
 /* INTERACTION MANAGEMENT */
 
