@@ -1,3 +1,9 @@
+import { MessageButton, MessageActionRow } from "discord.js";
+export const refreshButton = new MessageActionRow().addComponents(new MessageButton()
+    .setCustomId("custom/ping:refresh")
+    .setLabel("Refresh")
+    .setStyle("PRIMARY")
+    .setEmoji("🔁"));
 const ping = {
     metadata: {
         enabledByDefault: true,
@@ -6,33 +12,51 @@ const ping = {
     },
     events: {
         load: () => {
+            const refreshInteraction = {
+                id: "ping:refresh",
+                type: "button",
+                handler: async (interaction) => {
+                    const { bold } = await import("@discordjs/builders");
+                    const { stripIndents: $ } = await import("common-tags");
+                    const { Message } = await import("discord.js");
+                    const { refreshButton } = await import("../plugins/ping");
+                    if (!(interaction.message instanceof Message)) {
+                        const reason = `Received an interaction from a server that the bot is not present in`;
+                        const content = $ `
+              :x: ${bold("Interaction failed")} (${reason})
+
+              Possible causes:
+               - Incorrect scopes specified when inviting the bot
+               - Clicking a button from a bot message after the bot has left the server
+               - Some Discord API change (create a GH issue to fix the)
+            `;
+                        return await interaction.reply({ content, ephemeral: true });
+                    }
+                    console.log("Here!");
+                    interaction.message.edit({
+                        content: $ `
+              :ping_pong: ${bold("Pong!")}
+              Websocket heartbeat: ${client.ws.ping}ms
+            `,
+                        components: [refreshButton],
+                    });
+                },
+            };
+            registerCustomInteractions([refreshInteraction]);
             registerCommands([
                 new Command({
                     name: "ping",
                     id: "ping",
                     handler: async (e) => {
-                        const { MessageActionRow, MessageButton, ApplicationCommandPermissionsManager, } = await import("discord.js");
                         const { bold } = await import("@discordjs/builders");
                         const { stripIndents: $ } = await import("common-tags");
-                        const button = new MessageActionRow().addComponents(new MessageButton()
-                            .setCustomId("custom/ping:refresh")
-                            .setLabel("Refresh")
-                            .setStyle("PRIMARY")
-                            .setEmoji("🔁"));
-                        e.message
-                            .reply({
+                        const { refreshButton } = await import("../plugins/ping");
+                        e.message.reply({
                             content: $ `
                   :ping_pong: ${bold("Pong!")}
                   Websocket heartbeat: ${client.ws.ping}ms
                 `,
-                            components: [button],
-                        })
-                            .then((msg) => {
-                            const roundtrip = msg.createdTimestamp - e.message.createdTimestamp;
-                            msg.edit($ `
-                    ${msg.content}
-                    API roundtrip: ${roundtrip}ms
-                  `);
+                            components: [refreshButton],
                         });
                     },
                 }),

@@ -5,10 +5,17 @@ import fs from "fs"
 import path from "path"
 
 // Discord.js + extra typings
-import Discord, { Intents, Client, Message } from "discord.js"
+import Discord, {
+  Intents,
+  Client,
+  Message,
+  Interaction,
+  ButtonInteraction,
+} from "discord.js"
 
 // Template literal utils
-import { stripIndent as $ } from "common-tags"
+import { stripIndents as $ } from "common-tags"
+import { bold, inlineCode } from "@discordjs/builders"
 
 /* INITIALIZATION */
 
@@ -42,12 +49,16 @@ import("dotenv").then(({ config }) => {
 
   // Initialize a connection with the Discord gateway
   client.login(process.env.DISCORD_TOKEN)
+
+  // Subscribe to debug messages if `VERBOSE` is set
+  if (process.env.VERBOSE) client.on("debug", console.log)
 })
 
 /* TYPESCRIPT STUFF */
 
 interface registry {
   commands: Map<string, Command>
+  customInteractions: Map<string, customInteraction>
 }
 
 export interface commandOptions {
@@ -78,6 +89,8 @@ interface commandParam {
   // TODO: Validation options
 }
 
+type commandCallback = (e: commandEvent) => void
+
 export interface plugin {
   metadata: pluginMetadata
   events?: {
@@ -88,7 +101,7 @@ export interface plugin {
   }
 }
 
-type pluginScope = "command" | "script"
+type pluginScope = "command" | "custom-interaction" | "script"
 
 interface pluginMetadata {
   enabledByDefault: boolean
@@ -105,18 +118,37 @@ interface registeredPlugin {
   data: plugin
 }
 
-type commandCallback = (e: commandEvent) => void
+type interactionSource =
+  | "button"
+  | "context-menu"
+  | "slash-command"
+  | "select-menu"
+  | "context-menu"
+
+type customInteraction = customButtonInteraction | customOtherInteraction
+
+export interface customButtonInteraction {
+  id: string
+  type: "button"
+  handler: (interaction: ButtonInteraction) => void
+}
+interface customOtherInteraction {
+  id: string
+  type: interactionSource
+  handler: (interaction: Interaction) => void
+}
 
 /* CONSTANTS */
 
 const prefix = "p!"
 const prefixRegex = new RegExp(`^${prefix}`)
 const pluginsFolder = path.resolve("plugins")
-const verbose = false
+let verbose = false
 const arrowRight = "**\u2192**"
 
 const registry: registry = {
   commands: new Map(),
+  customInteractions: new Map(),
 }
 const plugins: Map<string, registeredPlugin> = new Map()
 
@@ -411,9 +443,48 @@ fs.readdir(pluginsFolder, (err, files) => {
   })
 })
 
-/* D.JS EVENT LISTENERS */
+/* INTERACTION MANAGEMENT */
 
-if (verbose) client.on("debug", console.log)
+export function registerCustomInteractions(interactions: customInteraction[]) {
+  for (const interaction of interactions) {
+    registry.customInteractions.set(interaction.id, interaction)
+  }
+}
+
+function handleInteraction(i: Interaction) {
+  if (i.isButton()) return handleButtonInteraction(i)
+}
+
+async function handleButtonInteraction(i: ButtonInteraction) {
+  const [actionType, handlerId] = i.customId.split("/")
+
+  if (actionType === "custom") {
+    const customInteraction = registry.customInteractions.get(handlerId)
+
+    if (!customInteraction) {
+      let interactionSrc = "interaction"
+      if (i.isButton()) interactionSrc = "button"
+      if (i.isCommand()) interactionSrc = "slash command"
+      if (i.isSelectMenu()) interactionSrc = "selection"
+
+      const reason = `Could not find a handler to match this ${interactionSrc}`
+      const content = $`
+        :x: ${bold("Interaction failed")} (${reason})
+
+        Registered interaction handlers: ${registry.customInteractions.size}
+        Interaction ID: ${inlineCode(i.id)}
+        Handler ID: ${inlineCode(handlerId)}
+      `
+      return await i.reply({ content, ephemeral: true })
+    }
+
+    // If a handler is present, execute it
+    const handler = eval(customInteraction.handler.toString())
+    handler(i)
+  }
+}
+
+/* D.JS EVENT LISTENERS */
 
 client.on("ready", () => {
   if (client.user) {
@@ -468,3 +539,5 @@ client.on("messageCreate", async (msg) => {
   // Execute the callback for the command
   command.callback({ params, message: msg, command })
 })
+
+client.on("interactionCreate", handleInteraction)

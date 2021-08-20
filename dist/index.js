@@ -1,7 +1,8 @@
 import fs from "fs";
 import path from "path";
-import Discord, { Intents } from "discord.js";
-import { stripIndent as $ } from "common-tags";
+import Discord, { Intents, } from "discord.js";
+import { stripIndents as $ } from "common-tags";
+import { bold, inlineCode } from "@discordjs/builders";
 const intents = new Intents();
 intents.add(Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.DIRECT_MESSAGE_REACTIONS);
 export const client = new Discord.Client({
@@ -16,14 +17,17 @@ import("dotenv").then(({ config }) => {
     if (err)
         throw err;
     client.login(process.env.DISCORD_TOKEN);
+    if (process.env.VERBOSE)
+        client.on("debug", console.log);
 });
 const prefix = "p!";
 const prefixRegex = new RegExp(`^${prefix}`);
 const pluginsFolder = path.resolve("plugins");
-const verbose = false;
+let verbose = false;
 const arrowRight = "**\u2192**";
 const registry = {
     commands: new Map(),
+    customInteractions: new Map(),
 };
 const plugins = new Map();
 let commandNameCache = new Map();
@@ -203,8 +207,41 @@ fs.readdir(pluginsFolder, (err, files) => {
         });
     });
 });
-if (verbose)
-    client.on("debug", console.log);
+export function registerCustomInteractions(interactions) {
+    for (const interaction of interactions) {
+        registry.customInteractions.set(interaction.id, interaction);
+    }
+}
+function handleInteraction(i) {
+    if (i.isButton())
+        return handleButtonInteraction(i);
+}
+async function handleButtonInteraction(i) {
+    const [actionType, handlerId] = i.customId.split("/");
+    if (actionType === "custom") {
+        const customInteraction = registry.customInteractions.get(handlerId);
+        if (!customInteraction) {
+            let interactionSrc = "interaction";
+            if (i.isButton())
+                interactionSrc = "button";
+            if (i.isCommand())
+                interactionSrc = "slash command";
+            if (i.isSelectMenu())
+                interactionSrc = "selection";
+            const reason = `Could not find a handler to match this ${interactionSrc}`;
+            const content = $ `
+        :x: ${bold("Interaction failed")} (${reason})
+
+        Registered interaction handlers: ${registry.customInteractions.size}
+        Interaction ID: ${inlineCode(i.id)}
+        Handler ID: ${inlineCode(handlerId)}
+      `;
+            return await i.reply({ content, ephemeral: true });
+        }
+        const handler = eval(customInteraction.handler.toString());
+        handler(i);
+    }
+}
 client.on("ready", () => {
     if (client.user) {
         console.log(`Logged in as ${client.user.tag}`);
@@ -244,4 +281,5 @@ client.on("messageCreate", async (msg) => {
     }
     command.callback({ params, message: msg, command });
 });
+client.on("interactionCreate", handleInteraction);
 //# sourceMappingURL=index.js.map

@@ -1,4 +1,4 @@
-import { Client, Message } from "discord.js";
+import { Client, Message, Interaction, ButtonInteraction } from "discord.js";
 export declare const client: Client;
 export interface commandOptions {
     name: string;
@@ -18,6 +18,7 @@ interface commandParam {
     name: string;
     optional?: boolean;
 }
+declare type commandCallback = (e: commandEvent) => void;
 export interface plugin {
     metadata: pluginMetadata;
     events?: {
@@ -27,7 +28,7 @@ export interface plugin {
         upgrade?: (from: string, to: string) => void;
     };
 }
-declare type pluginScope = "command" | "script";
+declare type pluginScope = "command" | "custom-interaction" | "script";
 interface pluginMetadata {
     enabledByDefault: boolean;
     scopes: pluginScope[];
@@ -37,7 +38,18 @@ interface pluginMetadata {
     description?: string;
     version?: string;
 }
-declare type commandCallback = (e: commandEvent) => void;
+declare type interactionSource = "button" | "context-menu" | "slash-command" | "select-menu" | "context-menu";
+declare type customInteraction = customButtonInteraction | customOtherInteraction;
+export interface customButtonInteraction {
+    id: string;
+    type: "button";
+    handler: (interaction: ButtonInteraction) => void;
+}
+interface customOtherInteraction {
+    id: string;
+    type: interactionSource;
+    handler: (interaction: Interaction) => void;
+}
 export declare class Command {
     name: string;
     params: commandParam[];
@@ -53,4 +65,5 @@ declare class StubCommand extends Command {
     constructor(id: string, handler: commandCallback, params?: commandParam[], desc?: string);
 }
 export declare function registerCommands(commands: Command[]): void;
+export declare function registerCustomInteractions(interactions: customInteraction[]): void;
 export {};
