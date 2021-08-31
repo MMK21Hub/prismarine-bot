@@ -1,5 +1,5 @@
 // prettier-ignore
-import { plugin, Command, registerCommands, client, registerCustomInteractions, customButtonInteraction } from "../index"
+import { Command, registerCommands, client, registerCustomInteractions, customButtonInteraction } from "../index"
 import { MessageButton, MessageActionRow } from "discord.js"
 
 export const refreshButton = new MessageActionRow().addComponents(
@@ -10,7 +10,7 @@ export const refreshButton = new MessageActionRow().addComponents(
     .setEmoji("🔁")
 )
 
-const ping: plugin = {
+const ping = {
   metadata: {
     enabledByDefault: true,
     scopes: ["script"],
@@ -25,7 +25,7 @@ const ping: plugin = {
           const { bold } = await import("@discordjs/builders")
           const { stripIndents: $ } = await import("common-tags")
           const { Message } = await import("discord.js")
-          const { refreshButton } = await import("../plugins/ping")
+          const { refreshButton } = await import("./ping")
 
           if (!(interaction.message instanceof Message)) {
             const reason = `Received an interaction from a server that the bot is not present in`
@@ -61,7 +61,7 @@ const ping: plugin = {
           handler: async (e) => {
             const { bold } = await import("@discordjs/builders")
             const { stripIndents: $ } = await import("common-tags")
-            const { refreshButton } = await import("../plugins/ping")
+            const { refreshButton } = await import("./ping")
 
             e.message.reply({
               content: $`

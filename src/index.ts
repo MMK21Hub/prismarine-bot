@@ -1,5 +1,9 @@
 /* IMPORTS */
 
+// Local files
+import { registerCommands, Command } from "./commands"
+import { prefixedCommand } from "./util"
+
 // Builtins
 import fs from "fs"
 import path from "path"
@@ -15,6 +19,8 @@ import Discord, {
 
 // Template literal utils
 import { stripIndents as $ } from "common-tags"
+
+// Discord-specific utils
 import { bold, inlineCode } from "@discordjs/builders"
 
 /* INITIALIZATION */
@@ -56,40 +62,7 @@ import("dotenv").then(({ config }) => {
 
 /* TYPESCRIPT STUFF */
 
-interface registry {
-  commands: Map<string, Command>
-  customInteractions: Map<string, customInteraction>
-}
-
-export interface commandOptions {
-  /** The name of the command. This is what the user types to execute the command. */
-  name: string
-  /** A unique namespaced ID for the command. */
-  id: string
-  /** The function to be run when a user executes the command. */
-  handler: commandCallback | StubCommand[]
-  /** The parameters, if any, that the command should take. */
-  params?: commandParam[]
-  /** A brief description to go in the command's line in the help menu. */
-  shortDesc?: string
-  /** All information about the command, to be used when the user asks for specific help on this command. */
-  desc?: string
-  parent?: string
-}
-
-interface commandEvent {
-  message: Message
-  params: string[]
-  command: Command
-}
-
-interface commandParam {
-  name: string
-  optional?: boolean
-  // TODO: Validation options
-}
-
-type commandCallback = (e: commandEvent) => void
+type registry<T> = Map<string, T>
 
 type interactionSource =
   | "button"
@@ -115,254 +88,13 @@ interface customOtherInteraction {
 
 const prefix = "p!"
 const prefixRegex = new RegExp(`^${prefix}`)
-let verbose = false
 const arrowRight = "**\u2192**"
 
-const registry: registry = {
-  commands: new Map(),
-  customInteractions: new Map(),
-}
+const commands: registry<Command> = new Map()
+const customInteractions: registry<customInteraction> = new Map()
 
 /** A map of command names to command IDs. Used for quick lookup of which command a user has entered. */
 let commandNameCache: Map<string, string> = new Map()
-
-/* UTILITY FUNCTIONS */
-
-/**
- * Generates a map that allows for quick lookup of a specific property
- * @param data An object that has the data that needs to be cached
- * @param options Specifies which properties of the above object should be used as the key and value when creating the cache
- */
-function createCache(
-  data: any[],
-  options: {
-    key: string
-    value: string
-  }
-) {
-  const cache = new Map()
-
-  let index = 0
-  for (const item of data) {
-    // If the item does not contain the specified properties,
-    // raise an error.
-    if (!item[options.key] || !item[options.value]) {
-      throw new Error(
-        `Found an object (index ${index}) that does not have a property that can be used as a key/value`
-      )
-    }
-
-    // Add this item to the cache
-    cache.set(item[options.key], item[options.value])
-
-    index++
-  }
-
-  return cache
-}
-
-function validNamespacedId(value: string) {
-  const validChars = /[a-z0-9_:]/g
-
-  // Removes every valid character form the string,
-  // then checks if the string is empty.
-  // There must be a better way to do this.
-  if (value.replace(validChars, "") === "") {
-    return true
-  }
-
-  return false
-}
-
-/**
- * Combines the server's current prefix, a given command and optionally arguments
- * to create a pastable example command that can be given to the user.
- * Useful for help/error messages.
- * @param command The name of the command to be used
- * @param args An optional array of any arguments to add to the command
- * @param wrap An optional string to add to the beginning and end of the output
- * @returns A string that combines the given arguments and the prefix
- *
- * @example
- * prefixedCommand("balance")          // p!balance
- * @example
- * prefixedCommand("buy",["computer"]) // p!buy computer
- * @example
- * prefixedCommand(
- *  "connect",
- *  ["localhost", "8080"],
- *  "**"
- * )
- * // **p!connect localhost 8080**
- */
-function prefixedCommand(command: string, args: string[] = [], wrap = "") {
-  const joinedArgs = args.join(" ")
-  if (wrap) return wrap + prefix + command + " " + joinedArgs + wrap
-  return prefix + command + " " + joinedArgs
-}
-
-/* COMMAND MANAGEMENT */
-
-function handleOverloadedCommand(e: commandEvent) {
-  if (typeof e.command.handler === "function") {
-    e.command.callback(e)
-    console.error(
-      "handleOverloadedCommand() was called on a non-overloaded command - something must have gone wrong"
-    )
-    return
-  }
-
-  e.command.handler.forEach((stub) => {
-    if (stub.params.length === e.params.length) {
-      stub.callback(e)
-    }
-  })
-}
-
-export class Command {
-  // Properties
-  name
-  params: commandParam[]
-  id
-  handler
-  parent
-  shortDesc
-  desc
-  callback: commandCallback
-
-  /**
-   * Creates a new `Command` object.
-   * Note that this doesn't automatically register the command:
-   * you have to call {@link registerCommands} for the command to be usable.
-   */
-  constructor(options: commandOptions) {
-    this.name = options.name
-    this.params = options.params || []
-    this.id = options.id
-    this.handler = options.handler
-    this.desc = options.desc
-    this.shortDesc = options.shortDesc
-    this.parent = options.parent
-    this.callback =
-      typeof options.handler === "function"
-        ? options.handler
-        : handleOverloadedCommand
-
-    if (options.name.length > 16) {
-      // This is meant to be far above what anyone would need
-      throw new Error("Command name lengths must be below 16 characters")
-    }
-    if (!validNamespacedId(options.id)) {
-      throw new Error(
-        "Namespaced IDs must only contain characters a-z, 0-9, _ or :"
-      )
-    }
-    if (typeof options.handler === "function" && options.handler.length > 1) {
-      throw new Error("Command callbacks should only take one parameter")
-    }
-    if (options.shortDesc && /\n/.test(options.shortDesc)) {
-      throw new Error(
-        "Short descriptions cannot contain line breaks. Move details to the extended description."
-      )
-    }
-    if (options.name.toLowerCase() !== options.name) {
-      throw new Error("Command names should be lowercase")
-    }
-
-    if (typeof options.handler !== "function") {
-      let parameterCounts: number[] = []
-      options.handler.forEach((stub) => {
-        if (parameterCounts.includes(stub.params.length)) {
-          throw new Error(
-            "Two or more stub commands with the same parameter count cannot be attached to a single command."
-          )
-        }
-        parameterCounts.push(stub.params.length)
-      })
-    }
-  }
-}
-
-class StubCommand extends Command {
-  constructor(
-    id: string,
-    handler: commandCallback,
-    params: commandParam[] = [],
-    desc?: string
-  ) {
-    super({
-      name: "",
-      id,
-      handler,
-      params,
-      desc,
-    })
-  }
-}
-
-class HelpCommand extends Command {
-  constructor() {
-    super({
-      name: "help",
-      id: "_help",
-      params: [
-        {
-          name: "command",
-          optional: true,
-        },
-      ],
-      handler: ({ message }) => {
-        let longestCmd = 0
-        registry.commands.forEach((cmd) => {
-          if (cmd.name.length > longestCmd) longestCmd = cmd.name.length
-        })
-
-        let output = "**Commands:**\n```yaml\n"
-
-        registry.commands.forEach((cmd) => {
-          const extraSpaces = " ".repeat(longestCmd - cmd.name.length)
-
-          if (!cmd.shortDesc && cmd.desc) {
-            output += `${cmd.name}${extraSpaces} # Type ${prefixedCommand(
-              "help",
-              [cmd.name]
-            )}\n`
-          }
-          if (!cmd.shortDesc) {
-            output += `${cmd.name}${extraSpaces} # No description\n`
-            return
-          }
-          output += `${cmd.name}${extraSpaces} - ${cmd.shortDesc}\n`
-        })
-
-        output += "```"
-
-        message.reply(output)
-      },
-    })
-  }
-}
-
-/**
- * Registers an array of commands.
- * This lets you add new commands without restarting the bot :D
- */
-export function registerCommands(commands: Command[]) {
-  // Add each command to the registry
-  for (const command of commands) {
-    registry.commands.set(command.id, command)
-  }
-
-  // Update the cache
-  let newCommands: Command[] = []
-  registry.commands.forEach((command) => {
-    newCommands.push(command)
-  })
-  commandNameCache = createCache(newCommands, {
-    key: "name",
-    value: "id",
-  })
-}
 
 registerCommands([new HelpCommand()])
 
