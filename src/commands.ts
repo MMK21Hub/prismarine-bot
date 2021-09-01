@@ -1,5 +1,4 @@
 import { Message } from "discord.js"
-import { registry } from "./index"
 import { createCache, Registry, validNamespacedId } from "./util"
 
 export interface commandOptions {
@@ -48,7 +47,7 @@ function handleOverloadedCommand(e: commandEvent) {
   })
 }
 
-export const commandRegistry: registry<Command> = new Registry((reg, items) => {
+export const commands: Registry<Command> = new Registry((reg, items) => {
   // Update the command name cache when a new command is registered
   let allCommands: Command[] = []
   reg.forEach((command) => {

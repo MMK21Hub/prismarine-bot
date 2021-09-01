@@ -75,13 +75,13 @@ export function validNamespacedId(value: string) {
 //   return prefix + command + " " + joinedArgs
 // }
 
-type postRegisterCallback<T extends unknownObject> = (
+type postRegisterCallback<T extends anyObject> = (
   registry: Registry<T>,
   items: T[]
 ) => void
-export type unknownObject = { [key: string]: unknown }
+export type anyObject = { [key: string]: any }
 
-export class Registry<T extends unknownObject> extends Map {
+export class Registry<T extends anyObject> extends Map<string, T> {
   register: (items: T[] | T, key?: string) => void
   private postRegister?: (registry: Registry<T>, items: T[]) => void
   constructor(postRegister?: postRegisterCallback<T>) {

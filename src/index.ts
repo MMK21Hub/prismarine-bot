@@ -1,7 +1,7 @@
 /* IMPORTS */
 
 // Local files
-import { commandParam, commandRegistry as commands } from "./commands"
+import { commandParam, commands } from "./commands"
 import { Registry } from "./util"
 
 // Builtins
@@ -181,7 +181,7 @@ client.on("messageCreate", async (msg) => {
       :x: **Missing one or more required parameters**
       Expected ${minParams} parameter(s) but got ${params.length}.
 
-      ${arrowRight} Type ${prefixedCommand("help", [command.name], "`")} \
+      ${arrowRight} Type ${inlineCode(`${prefix}help ${command.name}`)} \
       to view command help.
     `)
 
