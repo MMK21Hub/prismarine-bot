@@ -1,6 +1,6 @@
 import { Message } from "discord.js"
 import { registry } from "./index"
-import { createCache, prefixedCommand, validNamespacedId } from "./util"
+import { createCache, Registry, validNamespacedId } from "./util"
 
 export interface commandOptions {
   /** The name of the command. This is what the user types to execute the command. */
@@ -47,6 +47,18 @@ function handleOverloadedCommand(e: commandEvent) {
     }
   })
 }
+
+export const commandRegistry: registry<Command> = new Registry((reg, items) => {
+  // Update the command name cache when a new command is registered
+  let allCommands: Command[] = []
+  reg.forEach((command) => {
+    allCommands.push(command)
+  })
+  return createCache(allCommands, {
+    key: "name",
+    value: "id",
+  })
+})
 
 export class Command {
   // Properties
@@ -129,66 +141,45 @@ class StubCommand extends Command {
   }
 }
 
-class HelpCommand extends Command {
-  constructor() {
-    super({
-      name: "help",
-      id: "_help",
-      params: [
-        {
-          name: "command",
-          optional: true,
-        },
-      ],
-      handler: ({ message }) => {
-        let longestCmd = 0
-        registry.commands.forEach((cmd) => {
-          if (cmd.name.length > longestCmd) longestCmd = cmd.name.length
-        })
+// class HelpCommand extends Command {
+//   constructor() {
+//     super({
+//       name: "help",
+//       id: "_help",
+//       params: [
+//         {
+//           name: "command",
+//           optional: true,
+//         },
+//       ],
+//       handler: ({ message }) => {
+//         let longestCmd = 0
+//         registry.commands.forEach((cmd) => {
+//           if (cmd.name.length > longestCmd) longestCmd = cmd.name.length
+//         })
 
-        let output = "**Commands:**\n```yaml\n"
+//         let output = "**Commands:**\n```yaml\n"
 
-        registry.commands.forEach((cmd) => {
-          const extraSpaces = " ".repeat(longestCmd - cmd.name.length)
+//         registry.commands.forEach((cmd) => {
+//           const extraSpaces = " ".repeat(longestCmd - cmd.name.length)
 
-          if (!cmd.shortDesc && cmd.desc) {
-            output += `${cmd.name}${extraSpaces} # Type ${prefixedCommand(
-              "help",
-              [cmd.name]
-            )}\n`
-          }
-          if (!cmd.shortDesc) {
-            output += `${cmd.name}${extraSpaces} # No description\n`
-            return
-          }
-          output += `${cmd.name}${extraSpaces} - ${cmd.shortDesc}\n`
-        })
+//           if (!cmd.shortDesc && cmd.desc) {
+//             output += `${cmd.name}${extraSpaces} # Type ${prefixedCommand(
+//               "help",
+//               [cmd.name]
+//             )}\n`
+//           }
+//           if (!cmd.shortDesc) {
+//             output += `${cmd.name}${extraSpaces} # No description\n`
+//             return
+//           }
+//           output += `${cmd.name}${extraSpaces} - ${cmd.shortDesc}\n`
+//         })
 
-        output += "```"
+//         output += "```"
 
-        message.reply(output)
-      },
-    })
-  }
-}
-
-/**
- * Registers an array of commands.
- * This lets you add new commands without restarting the bot :D
- */
-export function registerCommands(registry: registry, commands: Command[]) {
-  // Add each command to the registry
-  for (const command of commands) {
-    registry.commands.set(command.id, command)
-  }
-
-  // Update the cache
-  let newCommands: Command[] = []
-  registry.commands.forEach((command) => {
-    newCommands.push(command)
-  })
-  return createCache(newCommands, {
-    key: "name",
-    value: "id",
-  })
-}
+//         message.reply(output)
+//       },
+//     })
+//   }
+// }

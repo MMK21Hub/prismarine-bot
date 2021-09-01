@@ -65,41 +65,48 @@ export function validNamespacedId(value: string) {
  * )
  * // **p!connect localhost 8080**
  */
-export function prefixedCommand(
-  command: string,
-  args: string[] = [],
-  wrap = ""
-) {
-  const joinedArgs = args.join(" ")
-  if (wrap) return wrap + prefix + command + " " + joinedArgs + wrap
-  return prefix + command + " " + joinedArgs
-}
+// export function prefixedCommand(
+//   command: string,
+//   args: string[] = [],
+//   wrap = ""
+// ) {
+//   const joinedArgs = args.join(" ")
+//   if (wrap) return wrap + prefix + command + " " + joinedArgs + wrap
+//   return prefix + command + " " + joinedArgs
+// }
 
-class Registry<T> extends Map {
-  register: (items: T[] | T) => Map<string, T>
+type postRegisterCallback<T extends unknownObject> = (
+  registry: Registry<T>,
+  items: T[]
+) => void
+export type unknownObject = { [key: string]: unknown }
+
+export class Registry<T extends unknownObject> extends Map {
+  register: (items: T[] | T, key?: string) => void
   private postRegister?: (registry: Registry<T>, items: T[]) => void
-  constructor(postRegister?: () => void) {
+  constructor(postRegister?: postRegisterCallback<T>) {
     super()
     this.postRegister = postRegister
-    this.register = (items: T[] | T) => {
+    this.register = (items, key = "id") => {
       if (!Array.isArray(items)) items = [items]
 
       // Add each command to the registry
-      for (const command of items) {
-        this.set(command.id, command)
+      for (const item of items) {
+        if (typeof item !== "object") {
+          throw new Error("Each item passed to register() must be an object.")
+        }
+
+        if (!item.hasOwnProperty(key)) {
+          throw new Error(
+            "Found item passed to register() that does not contain specified key: " +
+              key
+          )
+        }
+        this.set(item[key], item)
       }
 
       // Run the postRegister callback (if present)
       this.postRegister?.(this, items)
-      // Update the cache
-      let newCommands: Command[] = []
-      registry.commands.forEach((command) => {
-        newCommands.push(command)
-      })
-      return createCache(newCommands, {
-        key: "name",
-        value: "id",
-      })
     }
   }
 }

@@ -1,8 +1,8 @@
 /* IMPORTS */
 
 // Local files
-import { registerCommands, Command } from "./commands"
-import { prefixedCommand } from "./util"
+import { commandParam, commandRegistry as commands } from "./commands"
+import { Registry } from "./util"
 
 // Builtins
 import fs from "fs"
@@ -12,7 +12,6 @@ import path from "path"
 import Discord, {
   Intents,
   Client,
-  Message,
   Interaction,
   ButtonInteraction,
 } from "discord.js"
@@ -62,8 +61,6 @@ import("dotenv").then(({ config }) => {
 
 /* TYPESCRIPT STUFF */
 
-type registry<T> = Map<string, T>
-
 type interactionSource =
   | "button"
   | "context-menu"
@@ -90,19 +87,19 @@ const prefix = "p!"
 const prefixRegex = new RegExp(`^${prefix}`)
 const arrowRight = "**\u2192**"
 
-const commands: registry<Command> = new Map()
-const customInteractions: registry<customInteraction> = new Map()
+// Registries
+const customInteractions = new Registry<customInteraction>()
 
 /** A map of command names to command IDs. Used for quick lookup of which command a user has entered. */
 let commandNameCache: Map<string, string> = new Map()
 
-registerCommands([new HelpCommand()])
+// registerCommands([new HelpCommand()])
 
 /* INTERACTION MANAGEMENT */
 
 export function registerCustomInteractions(interactions: customInteraction[]) {
   for (const interaction of interactions) {
-    registry.customInteractions.set(interaction.id, interaction)
+    customInteractions.set(interaction.id, interaction)
   }
 }
 
@@ -114,7 +111,7 @@ async function handleButtonInteraction(i: ButtonInteraction) {
   const [actionType, handlerId] = i.customId.split("/")
 
   if (actionType === "custom") {
-    const customInteraction = registry.customInteractions.get(handlerId)
+    const customInteraction = customInteractions.get(handlerId)
 
     if (!customInteraction) {
       let interactionSrc = "interaction"
@@ -126,7 +123,7 @@ async function handleButtonInteraction(i: ButtonInteraction) {
       const content = $`
         :x: ${bold("Interaction failed")} (${reason})
 
-        Registered interaction handlers: ${registry.customInteractions.size}
+        Registered interaction handlers: ${customInteractions.size}
         Interaction ID: ${inlineCode(i.id)}
         Handler ID: ${inlineCode(handlerId)}
       `
@@ -163,7 +160,7 @@ client.on("messageCreate", async (msg) => {
   const commandId = commandNameCache.get(commandName)
   if (!commandId) return
 
-  const command = registry.commands.get(commandId)
+  const command = commands.get(commandId)
 
   // Throw an error if the command isn't in the registry
   if (!command)
