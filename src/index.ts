@@ -1,8 +1,8 @@
 /* IMPORTS */
 
 // Local files
-import { commandParam, commands } from "./commands"
-import { Registry } from "./util"
+import { commands } from "./command.js"
+import { Registry } from "./util.js"
 
 // Builtins
 import fs from "fs"
@@ -54,9 +54,6 @@ import("dotenv").then(({ config }) => {
 
   // Initialize a connection with the Discord gateway
   client.login(process.env.DISCORD_TOKEN)
-
-  // Subscribe to debug messages if `VERBOSE` is set
-  if (process.env.VERBOSE) client.on("debug", console.log)
 })
 
 /* TYPESCRIPT STUFF */
@@ -88,7 +85,7 @@ const prefixRegex = new RegExp(`^${prefix}`)
 const arrowRight = "**\u2192**"
 
 // Registries
-const customInteractions = new Registry<customInteraction>()
+const customInteractions = new Map()
 
 /** A map of command names to command IDs. Used for quick lookup of which command a user has entered. */
 let commandNameCache: Map<string, string> = new Map()

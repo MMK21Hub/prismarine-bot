@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { commands } from "./command.js";
 import Discord, { Intents, } from "discord.js";
 import { stripIndents as $ } from "common-tags";
 import { bold, inlineCode } from "@discordjs/builders";
@@ -17,199 +16,15 @@ import("dotenv").then(({ config }) => {
     if (err)
         throw err;
     client.login(process.env.DISCORD_TOKEN);
-    if (process.env.VERBOSE)
-        client.on("debug", console.log);
 });
 const prefix = "p!";
 const prefixRegex = new RegExp(`^${prefix}`);
-const pluginsFolder = path.resolve("plugins");
-let verbose = false;
 const arrowRight = "**\u2192**";
-const registry = {
-    commands: new Map(),
-    customInteractions: new Map(),
-};
-const plugins = new Map();
+const customInteractions = new Map();
 let commandNameCache = new Map();
-function createCache(data, options) {
-    const cache = new Map();
-    let index = 0;
-    for (const item of data) {
-        if (!item[options.key] || !item[options.value]) {
-            throw new Error(`Found an object (index ${index}) that does not have a property that can be used as a key/value`);
-        }
-        cache.set(item[options.key], item[options.value]);
-        index++;
-    }
-    return cache;
-}
-function validNamespacedId(value) {
-    const validChars = /[a-z0-9_:]/g;
-    if (value.replace(validChars, "") === "") {
-        return true;
-    }
-    return false;
-}
-function prefixedCommand(command, args = [], wrap = "") {
-    const joinedArgs = args.join(" ");
-    if (wrap)
-        return wrap + prefix + command + " " + joinedArgs + wrap;
-    return prefix + command + " " + joinedArgs;
-}
-function handleOverloadedCommand(e) {
-    if (typeof e.command.handler === "function") {
-        e.command.callback(e);
-        console.error("handleOverloadedCommand() was called on a non-overloaded command - something must have gone wrong");
-        return;
-    }
-    e.command.handler.forEach((stub) => {
-        if (stub.params.length === e.params.length) {
-            stub.callback(e);
-        }
-    });
-}
-export class Command {
-    constructor(options) {
-        this.name = options.name;
-        this.params = options.params || [];
-        this.id = options.id;
-        this.handler = options.handler;
-        this.desc = options.desc;
-        this.shortDesc = options.shortDesc;
-        this.parent = options.parent;
-        this.callback =
-            typeof options.handler === "function"
-                ? options.handler
-                : handleOverloadedCommand;
-        if (options.name.length > 16) {
-            throw new Error("Command name lengths must be below 16 characters");
-        }
-        if (!validNamespacedId(options.id)) {
-            throw new Error("Namespaced IDs must only contain characters a-z, 0-9, _ or :");
-        }
-        if (typeof options.handler === "function" && options.handler.length > 1) {
-            throw new Error("Command callbacks should only take one parameter");
-        }
-        if (options.shortDesc && /\n/.test(options.shortDesc)) {
-            throw new Error("Short descriptions cannot contain line breaks. Move details to the extended description.");
-        }
-        if (options.name.toLowerCase() !== options.name) {
-            throw new Error("Command names should be lowercase");
-        }
-        if (typeof options.handler !== "function") {
-            let parameterCounts = [];
-            options.handler.forEach((stub) => {
-                if (parameterCounts.includes(stub.params.length)) {
-                    throw new Error("Two or more stub commands with the same parameter count cannot be attached to a single command.");
-                }
-                parameterCounts.push(stub.params.length);
-            });
-        }
-    }
-}
-class StubCommand extends Command {
-    constructor(id, handler, params = [], desc) {
-        super({
-            name: "",
-            id,
-            handler,
-            params,
-            desc,
-        });
-    }
-}
-class HelpCommand extends Command {
-    constructor() {
-        super({
-            name: "help",
-            id: "_help",
-            params: [
-                {
-                    name: "command",
-                    optional: true,
-                },
-            ],
-            handler: ({ message }) => {
-                let longestCmd = 0;
-                registry.commands.forEach((cmd) => {
-                    if (cmd.name.length > longestCmd)
-                        longestCmd = cmd.name.length;
-                });
-                let output = "**Commands:**\n```yaml\n";
-                registry.commands.forEach((cmd) => {
-                    const extraSpaces = " ".repeat(longestCmd - cmd.name.length);
-                    if (!cmd.shortDesc && cmd.desc) {
-                        output += `${cmd.name}${extraSpaces} # Type ${prefixedCommand("help", [cmd.name])}\n`;
-                    }
-                    if (!cmd.shortDesc) {
-                        output += `${cmd.name}${extraSpaces} # No description\n`;
-                        return;
-                    }
-                    output += `${cmd.name}${extraSpaces} - ${cmd.shortDesc}\n`;
-                });
-                output += "```";
-                message.reply(output);
-            },
-        });
-    }
-}
-export function registerCommands(commands) {
-    for (const command of commands) {
-        registry.commands.set(command.id, command);
-    }
-    let newCommands = [];
-    registry.commands.forEach((command) => {
-        newCommands.push(command);
-    });
-    commandNameCache = createCache(newCommands, {
-        key: "name",
-        value: "id",
-    });
-}
-registerCommands([new HelpCommand()]);
-function registerPlugin(filename) {
-    return import(path.join(pluginsFolder, filename))
-        .catch(console.error)
-        .then(({ default: plugin }) => {
-        if (!plugin.metadata)
-            return console.error($ `
-          Could not find exported metadata in plugin file "${filename}".
-        `);
-        const metadata = plugin.metadata;
-        return plugins
-            .set(filename, {
-            enabled: false,
-            data: plugin,
-        })
-            .get(filename);
-    });
-}
-function loadPlugin(plugin) {
-    if (plugin.enabled)
-        return;
-    if (plugin.data.events?.load) {
-        const cb = eval(plugin.data.events.load.toString());
-        cb();
-    }
-    plugin.enabled = true;
-}
-fs.readdir(pluginsFolder, (err, files) => {
-    files.forEach((file) => {
-        const extension = path.extname(file);
-        if (extension !== ".js")
-            return;
-        if (plugins.has(path.basename(file, extension)))
-            return;
-        registerPlugin(file).then((plugin) => {
-            if (!plugin?.data.metadata.enabledByDefault)
-                return;
-            loadPlugin(plugin);
-        });
-    });
-});
 export function registerCustomInteractions(interactions) {
     for (const interaction of interactions) {
-        registry.customInteractions.set(interaction.id, interaction);
+        customInteractions.set(interaction.id, interaction);
     }
 }
 function handleInteraction(i) {
@@ -219,7 +34,7 @@ function handleInteraction(i) {
 async function handleButtonInteraction(i) {
     const [actionType, handlerId] = i.customId.split("/");
     if (actionType === "custom") {
-        const customInteraction = registry.customInteractions.get(handlerId);
+        const customInteraction = customInteractions.get(handlerId);
         if (!customInteraction) {
             let interactionSrc = "interaction";
             if (i.isButton())
@@ -232,7 +47,7 @@ async function handleButtonInteraction(i) {
             const content = $ `
         :x: ${bold("Interaction failed")} (${reason})
 
-        Registered interaction handlers: ${registry.customInteractions.size}
+        Registered interaction handlers: ${customInteractions.size}
         Interaction ID: ${inlineCode(i.id)}
         Handler ID: ${inlineCode(handlerId)}
       `;
@@ -258,7 +73,7 @@ client.on("messageCreate", async (msg) => {
     const commandId = commandNameCache.get(commandName);
     if (!commandId)
         return;
-    const command = registry.commands.get(commandId);
+    const command = commands.get(commandId);
     if (!command)
         throw new Error("Could not find command with ID of " + commandId);
     let minParams = 0;
@@ -274,7 +89,7 @@ client.on("messageCreate", async (msg) => {
       :x: **Missing one or more required parameters**
       Expected ${minParams} parameter(s) but got ${params.length}.
 
-      ${arrowRight} Type ${prefixedCommand("help", [command.name], "`")} \
+      ${arrowRight} Type ${inlineCode(`${prefix}help ${command.name}`)} \
       to view command help.
     `);
         return;

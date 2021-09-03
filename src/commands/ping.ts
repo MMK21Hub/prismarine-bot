@@ -1,5 +1,6 @@
 // prettier-ignore
-import { Command, registerCommands, client, registerCustomInteractions, customButtonInteraction } from "../index"
+// @ts-nocheck
+import { Command, registerCommands, client, registerCustomInteractions, customButtonInteraction } from "../index.ts"
 import { MessageButton, MessageActionRow } from "discord.js"
 
 export const refreshButton = new MessageActionRow().addComponents(

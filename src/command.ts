@@ -1,5 +1,5 @@
 import { Message } from "discord.js"
-import { createCache, Registry, validNamespacedId } from "./util"
+import { createCache, Registry, validNamespacedId } from "./util.js"
 
 export interface commandOptions {
   /** The name of the command. This is what the user types to execute the command. */

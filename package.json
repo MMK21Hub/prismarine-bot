@@ -2,10 +2,10 @@
   "name": "prismarine-bot",
   "version": "1.0.0",
   "description": "A discord bot that does some neat stuff with PrismarineJS",
-  "main": "index.js",
+  "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "start": "tsc-watch --onSuccess ./scripts/postbuild.sh",
+    "watch": "tsc-watch --onSuccess ./scripts/postbuild.sh",
     "build": "tsc --build --verbose"
   },
   "keywords": [
@@ -28,6 +28,7 @@
     "discord-api-types": "^0.22.0",
     "discord.js": "^13",
     "dotenv": "^10.0.0",
+    "esm": "^3.2.25",
     "minecraft-protocol": "^1.25.0",
     "mineflayer": "^3.9.0",
     "mineflayer-tps": "^1.0.1",
