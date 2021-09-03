@@ -22,6 +22,12 @@ const prefixRegex = new RegExp(`^${prefix}`);
 const arrowRight = "**\u2192**";
 const customInteractions = new Map();
 let commandNameCache = new Map();
+const contextHelper = {
+    client: () => client,
+    commandRegistry: () => commands,
+    customInteractionRegistry: () => customInteractions,
+    prefix: () => prefix,
+};
 export function registerCustomInteractions(interactions) {
     for (const interaction of interactions) {
         customInteractions.set(interaction.id, interaction);
@@ -94,7 +100,7 @@ client.on("messageCreate", async (msg) => {
     `);
         return;
     }
-    command.callback({ params, message: msg, command, regis });
+    command.callback({ params, message: msg, command, context: contextHelper });
 });
 client.on("interactionCreate", handleInteraction);
 //# sourceMappingURL=index.js.map

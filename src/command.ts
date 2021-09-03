@@ -33,7 +33,7 @@ export interface commandParam {
 
 export type commandCallback = (e: commandEvent) => void
 
-interface contextHelper {
+export interface contextHelper {
   commandRegistry: () => Registry<Command>
   customInteractionRegistry: () => Registry<customInteraction>
   prefix: () => string

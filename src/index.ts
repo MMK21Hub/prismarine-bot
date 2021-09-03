@@ -1,7 +1,7 @@
 /* IMPORTS */
 
 // Local files
-import { commands } from "./command.js"
+import { commands, contextHelper } from "./command.js"
 import { Registry } from "./util.js"
 
 // Builtins
@@ -90,7 +90,15 @@ const customInteractions = new Map()
 /** A map of command names to command IDs. Used for quick lookup of which command a user has entered. */
 let commandNameCache: Map<string, string> = new Map()
 
-// registerCommands([new HelpCommand()])
+/* CONTEXT BITS */
+
+const contextHelper: contextHelper = {
+  client: () => client,
+  commandRegistry: () => commands,
+  // @ts-ignore
+  customInteractionRegistry: () => customInteractions,
+  prefix: () => prefix,
+}
 
 /* INTERACTION MANAGEMENT */
 
@@ -186,7 +194,7 @@ client.on("messageCreate", async (msg) => {
   }
 
   // Execute the callback for the command
-  command.callback({ params, message: msg, command, regis })
+  command.callback({ params, message: msg, command, context: contextHelper })
 })
 
 client.on("interactionCreate", handleInteraction)
