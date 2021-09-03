@@ -1,4 +1,5 @@
-import { Message } from "discord.js"
+import { Client, Message } from "discord.js"
+import { customInteraction } from "./index.js"
 import { createCache, Registry, validNamespacedId } from "./util.js"
 
 export interface commandOptions {
@@ -21,6 +22,7 @@ export interface commandEvent {
   message: Message
   params: string[]
   command: Command
+  context: contextHelper
 }
 
 export interface commandParam {
@@ -30,6 +32,13 @@ export interface commandParam {
 }
 
 export type commandCallback = (e: commandEvent) => void
+
+interface contextHelper {
+  commandRegistry: () => Registry<Command>
+  customInteractionRegistry: () => Registry<customInteraction>
+  prefix: () => string
+  client: () => Client
+}
 
 function handleOverloadedCommand(e: commandEvent) {
   if (typeof e.command.handler === "function") {
@@ -139,46 +148,3 @@ class StubCommand extends Command {
     })
   }
 }
-
-// class HelpCommand extends Command {
-//   constructor() {
-//     super({
-//       name: "help",
-//       id: "_help",
-//       params: [
-//         {
-//           name: "command",
-//           optional: true,
-//         },
-//       ],
-//       handler: ({ message }) => {
-//         let longestCmd = 0
-//         registry.commands.forEach((cmd) => {
-//           if (cmd.name.length > longestCmd) longestCmd = cmd.name.length
-//         })
-
-//         let output = "**Commands:**\n```yaml\n"
-
-//         registry.commands.forEach((cmd) => {
-//           const extraSpaces = " ".repeat(longestCmd - cmd.name.length)
-
-//           if (!cmd.shortDesc && cmd.desc) {
-//             output += `${cmd.name}${extraSpaces} # Type ${prefixedCommand(
-//               "help",
-//               [cmd.name]
-//             )}\n`
-//           }
-//           if (!cmd.shortDesc) {
-//             output += `${cmd.name}${extraSpaces} # No description\n`
-//             return
-//           }
-//           output += `${cmd.name}${extraSpaces} - ${cmd.shortDesc}\n`
-//         })
-
-//         output += "```"
-
-//         message.reply(output)
-//       },
-//     })
-//   }
-// }

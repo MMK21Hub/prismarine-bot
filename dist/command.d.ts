@@ -1,4 +1,5 @@
-import { Message } from "discord.js";
+import { Client, Message } from "discord.js";
+import { customInteraction } from "./index.js";
 import { Registry } from "./util.js";
 export interface commandOptions {
     name: string;
@@ -13,12 +14,19 @@ export interface commandEvent {
     message: Message;
     params: string[];
     command: Command;
+    context: contextHelper;
 }
 export interface commandParam {
     name: string;
     optional?: boolean;
 }
 export declare type commandCallback = (e: commandEvent) => void;
+interface contextHelper {
+    commandRegistry: () => Registry<Command>;
+    customInteractionRegistry: () => Registry<customInteraction>;
+    prefix: () => string;
+    client: () => Client;
+}
 export declare const commands: Registry<Command>;
 export declare class Command {
     name: string;

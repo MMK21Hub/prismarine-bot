@@ -65,7 +65,7 @@ type interactionSource =
   | "select-menu"
   | "context-menu"
 
-type customInteraction = customButtonInteraction | customOtherInteraction
+export type customInteraction = customButtonInteraction | customOtherInteraction
 
 export interface customButtonInteraction {
   id: string
@@ -186,7 +186,7 @@ client.on("messageCreate", async (msg) => {
   }
 
   // Execute the callback for the command
-  command.callback({ params, message: msg, command })
+  command.callback({ params, message: msg, command, regis })
 })
 
 client.on("interactionCreate", handleInteraction)

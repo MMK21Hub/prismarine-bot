@@ -94,7 +94,7 @@ client.on("messageCreate", async (msg) => {
     `);
         return;
     }
-    command.callback({ params, message: msg, command });
+    command.callback({ params, message: msg, command, regis });
 });
 client.on("interactionCreate", handleInteraction);
 //# sourceMappingURL=index.js.map
