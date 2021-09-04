@@ -60,8 +60,7 @@ async function handleButtonInteraction(i) {
       `;
             return await i.reply({ content, ephemeral: true });
         }
-        const handler = eval(customInteraction.handler.toString());
-        handler(i);
+        customInteraction.handler?.(i);
     }
 }
 client.on("ready", () => {

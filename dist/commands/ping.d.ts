@@ -1,13 +1,3 @@
-import { MessageActionRow } from "discord.js";
-export declare const refreshButton: MessageActionRow;
-declare const ping: {
-    metadata: {
-        enabledByDefault: boolean;
-        scopes: string[];
-        pluginFormat: number;
-    };
-    events: {
-        load: () => void;
-    };
-};
-export default ping;
+import { Command } from "../command.js";
+declare const _default: Command;
+export default _default;

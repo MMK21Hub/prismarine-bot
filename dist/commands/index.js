@@ -1,3 +1,4 @@
 import help from "./help.js";
-export default [help];
+import ping from "./ping.js";
+export default [help, ping];
 //# sourceMappingURL=index.js.map

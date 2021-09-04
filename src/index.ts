@@ -117,7 +117,8 @@ async function handleButtonInteraction(i: ButtonInteraction) {
   const [actionType, handlerId] = i.customId.split("/")
 
   if (actionType === "custom") {
-    const customInteraction = customInteractions.get(handlerId)
+    const customInteraction: customInteraction =
+      customInteractions.get(handlerId)
 
     if (!customInteraction) {
       let interactionSrc = "interaction"
@@ -137,8 +138,7 @@ async function handleButtonInteraction(i: ButtonInteraction) {
     }
 
     // If a handler is present, execute it
-    const handler = eval(customInteraction.handler.toString())
-    handler(i)
+    customInteraction.handler?.(i)
   }
 }
 
