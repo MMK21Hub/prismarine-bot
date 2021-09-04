@@ -25,9 +25,11 @@ export default new Command({
       if (!cmd.shortDesc && cmd.desc) {
         const helpRef = `${context.prefix()}help ${cmd.name}`
         output += `${cmd.name}${extraSpaces} # Type ${helpRef}\n`
+        return
       }
       if (!cmd.shortDesc) {
         output += `${cmd.name}${extraSpaces} # No description\n`
+        return
       }
       output += `${cmd.name}${extraSpaces} - ${cmd.shortDesc}\n`
     })
