@@ -13,7 +13,7 @@ export declare class Registry<T extends anyObject> extends Map<string, T> {
     private postRegister?;
     constructor(postRegister?: postRegisterCallback<T>);
 }
-export declare const prefixRegex: RegExp;
+export declare const prefixRegex: any;
 export declare enum characters {
     ARROW_LEFT = "\u2190",
     ARROW_RIGHT = "\u2192",
