@@ -1,4 +1,7 @@
-import { Registry, validNamespacedId } from "./util.js";
+import { bold } from "@discordjs/builders";
+import { client } from "./index.js";
+import { prefixedCommand, prefixRegex, Registry, validNamespacedId, characters as _, } from "./util.js";
+import { stripIndents as $ } from "common-tags";
 function handleOverloadedCommand(e) {
     if (typeof e.command.handler === "function") {
         e.command.callback(e);
@@ -70,4 +73,33 @@ export function lookupCommandName(name) {
     });
     return result;
 }
+client.on("messageCreate", async (msg) => {
+    if (!msg.content.match(prefixRegex))
+        return;
+    const splitCmd = msg.content.split(" ");
+    const commandName = splitCmd[0].replace(prefixRegex, "").toLowerCase();
+    const params = splitCmd.slice(1);
+    const command = lookupCommandName(commandName);
+    if (!command)
+        return;
+    let minParams = 0;
+    if (command.params) {
+        command.params.forEach((param) => {
+            if (!param.optional) {
+                minParams++;
+            }
+        });
+    }
+    if (command.params && params.length < minParams) {
+        msg.channel.send($ `
+      :x: **Missing one or more required parameters**
+      Expected ${minParams} parameter(s) but got ${params.length}.
+
+      ${bold(_.ARROW_RIGHT)} Type ${prefixedCommand("help", [command.name])} \
+      to view command help.
+    `);
+        return;
+    }
+    command.callback({ params, message: msg, command });
+});
 //# sourceMappingURL=command.js.map

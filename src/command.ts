@@ -1,5 +1,14 @@
+import { bold } from "@discordjs/builders"
 import { Message } from "discord.js"
-import { Registry, validNamespacedId } from "./util.js"
+import { client } from "./index.js"
+import {
+  prefixedCommand,
+  prefixRegex,
+  Registry,
+  validNamespacedId,
+  characters as _,
+} from "./util.js"
+import { stripIndents as $ } from "common-tags"
 
 export interface commandOptions {
   /** The name of the command. This is what the user types to execute the command. */
@@ -137,3 +146,44 @@ export function lookupCommandName(name: string): null | Command {
   })
   return result
 }
+
+// Add an event listener to detect when a user enters a command
+client.on("messageCreate", async (msg) => {
+  // Not a command
+  if (!msg.content.match(prefixRegex)) return
+
+  // Process the message to get `commandName` and `params` out of it
+  const splitCmd = msg.content.split(" ")
+  const commandName = splitCmd[0].replace(prefixRegex, "").toLowerCase()
+  const params = splitCmd.slice(1)
+
+  // Get the command from the command name
+  const command = lookupCommandName(commandName)
+  // Ignore the message if the command does not exist
+  if (!command) return
+
+  let minParams = 0
+  if (command.params) {
+    // Check each param
+    command.params.forEach((param) => {
+      if (!param.optional) {
+        minParams++
+      }
+    })
+  }
+
+  if (command.params && params.length < minParams) {
+    msg.channel.send($`
+      :x: **Missing one or more required parameters**
+      Expected ${minParams} parameter(s) but got ${params.length}.
+
+      ${bold(_.ARROW_RIGHT)} Type ${prefixedCommand("help", [command.name])} \
+      to view command help.
+    `)
+
+    return
+  }
+
+  // Execute the callback for the command
+  command.callback({ params, message: msg, command })
+})

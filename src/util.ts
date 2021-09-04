@@ -116,6 +116,7 @@ export class Registry<T extends anyObject> extends Map<string, T> {
 export const prefixRegex = new RegExp(`^${prefix}`)
 
 export enum characters {
+  // ARROWS https://en.wikipedia.org/wiki/Arrow_(symbol)
   ARROW_LEFT = "\u2190",
   ARROW_RIGHT = "\u2192",
   ARROW_UP = "\u2191",

@@ -1,32 +1,10 @@
 /* IMPORTS */
 
-// Local files
-import { commands, lookupCommandName } from "./command.js"
-import {
-  prefixRegex,
-  Registry,
-  characters as _,
-  prefixedCommand,
-} from "./util.js"
+// Get the command registry so that we can register the imported commands
+import { commands } from "./command.js"
 
-// Builtins
-import fs from "fs"
-import path from "path"
-
-// Discord.js + extra typings
-import Discord, {
-  Intents,
-  Client,
-  Interaction,
-  ButtonInteraction,
-} from "discord.js"
-
-// Template literal utils
-import { stripIndents as $ } from "common-tags"
-
-// Discord-specific utils
-import { bold, inlineCode } from "@discordjs/builders"
-import { customInteraction } from "./interaction.js"
+// Bits from Discord.js that we'll use to initialize the client
+import { Intents, Client } from "discord.js"
 
 /* INITIALIZATION */
 
@@ -41,7 +19,7 @@ intents.add(
 )
 
 // Create a new D.JS client
-export const client: Client = new Discord.Client({
+export const client: Client = new Client({
   // Specifies the events that the bot receives
   intents,
   // Lets the bot work in DMs
@@ -66,57 +44,15 @@ import("dotenv").then(async ({ config }) => {
   commands.register(importedCommands)
 })
 
-/* CONSTANTS */
-
-// Bot prefix
+// Hardcode the bot prefix; this will be a server setting at some point
 export const prefix = "p!"
 
-/* D.JS EVENT LISTENERS */
-
+// Print to console when the connection is ready
 client.on("ready", () => {
   if (client.user) {
     console.log(`Logged in as ${client.user.tag}`)
     return
   }
+  // This shouldn't happen
   console.error("There is no user!")
-})
-
-client.on("messageCreate", async (msg) => {
-  // Not a command
-  if (!msg.content.match(prefixRegex)) return
-
-  // Process the message to get `commandName` and `params` out of it
-  const splitCmd = msg.content.split(" ")
-  const commandName = splitCmd[0].replace(prefixRegex, "").toLowerCase()
-  const params = splitCmd.slice(1)
-
-  // Get the command from the command name
-  const command = lookupCommandName(commandName)
-  // Ignore the message if the command does not exist
-  if (!command) return
-
-  let minParams = 0
-  if (command.params) {
-    // Check each param
-    command.params.forEach((param) => {
-      if (!param.optional) {
-        minParams++
-      }
-    })
-  }
-
-  if (command.params && params.length < minParams) {
-    msg.channel.send($`
-      :x: **Missing one or more required parameters**
-      Expected ${minParams} parameter(s) but got ${params.length}.
-
-      ${bold(_.ARROW_RIGHT)} Type ${prefixedCommand("help", [command.name])} \
-      to view command help.
-    `)
-
-    return
-  }
-
-  // Execute the callback for the command
-  command.callback({ params, message: msg, command })
 })
