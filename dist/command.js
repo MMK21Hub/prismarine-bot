@@ -71,4 +71,12 @@ class StubCommand extends Command {
         });
     }
 }
+export function lookupCommandName(name) {
+    let result = null;
+    commands.forEach((cmd) => {
+        if (cmd.name === name)
+            result = cmd;
+    });
+    return result;
+}
 //# sourceMappingURL=command.js.map

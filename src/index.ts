@@ -1,7 +1,7 @@
 /* IMPORTS */
 
 // Local files
-import { commands, contextHelper } from "./command.js"
+import { commands, contextHelper, lookupCommandName } from "./command.js"
 import { Registry } from "./util.js"
 
 // Builtins
@@ -91,9 +91,6 @@ const arrowRight = "**\u2192**"
 // Registries
 const customInteractions = new Map()
 
-/** A map of command names to command IDs. Used for quick lookup of which command a user has entered. */
-let commandNameCache: Map<string, string> = new Map()
-
 /* CONTEXT BITS */
 
 const contextHelper: contextHelper = {
@@ -164,16 +161,10 @@ client.on("messageCreate", async (msg) => {
   const commandName = splitCmd[0].replace(prefixRegex, "").toLowerCase()
   const params = splitCmd.slice(1)
 
-  // If the command the user entered doesn't exist,
-  // ignore it.
-  const commandId = commandNameCache.get(commandName)
-  if (!commandId) return
-
-  const command = commands.get(commandId)
-
-  // Throw an error if the command isn't in the registry
-  if (!command)
-    throw new Error("Could not find command with ID of " + commandId)
+  // Get the command from the command name
+  const command = lookupCommandName(commandName)
+  // Ignore the message if the command does not exist
+  if (!command) return
 
   let minParams = 0
   if (command.params) {

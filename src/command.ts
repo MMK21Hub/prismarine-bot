@@ -148,3 +148,11 @@ class StubCommand extends Command {
     })
   }
 }
+
+export function lookupCommandName(name: string): null | Command {
+  let result: null | Command = null
+  commands.forEach((cmd) => {
+    if (cmd.name === name) result = cmd
+  })
+  return result
+}

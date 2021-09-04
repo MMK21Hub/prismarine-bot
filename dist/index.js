@@ -1,4 +1,4 @@
-import { commands } from "./command.js";
+import { commands, lookupCommandName } from "./command.js";
 import Discord, { Intents, } from "discord.js";
 import { stripIndents as $ } from "common-tags";
 import { bold, inlineCode } from "@discordjs/builders";
@@ -23,7 +23,6 @@ const prefix = "p!";
 const prefixRegex = new RegExp(`^${prefix}`);
 const arrowRight = "**\u2192**";
 const customInteractions = new Map();
-let commandNameCache = new Map();
 const contextHelper = {
     client: () => client,
     commandRegistry: () => commands,
@@ -78,12 +77,9 @@ client.on("messageCreate", async (msg) => {
     const splitCmd = msg.content.split(" ");
     const commandName = splitCmd[0].replace(prefixRegex, "").toLowerCase();
     const params = splitCmd.slice(1);
-    const commandId = commandNameCache.get(commandName);
-    if (!commandId)
-        return;
-    const command = commands.get(commandId);
+    const command = lookupCommandName(commandName);
     if (!command)
-        throw new Error("Could not find command with ID of " + commandId);
+        return;
     let minParams = 0;
     if (command.params) {
         command.params.forEach((param) => {

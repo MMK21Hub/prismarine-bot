@@ -42,4 +42,5 @@ export declare class Command {
 declare class StubCommand extends Command {
     constructor(id: string, handler: commandCallback, params?: commandParam[], desc?: string);
 }
+export declare function lookupCommandName(name: string): null | Command;
 export {};
