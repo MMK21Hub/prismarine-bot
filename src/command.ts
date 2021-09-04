@@ -1,5 +1,5 @@
 import { Client, Message } from "discord.js"
-import { customInteraction } from "./index.js"
+import { customInteraction } from "./interaction.js"
 import { createCache, Registry, validNamespacedId } from "./util.js"
 
 export interface commandOptions {

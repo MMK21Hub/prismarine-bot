@@ -21,6 +21,7 @@ import { stripIndents as $ } from "common-tags"
 
 // Discord-specific utils
 import { bold, inlineCode } from "@discordjs/builders"
+import { customInteraction } from "./interaction.js"
 
 /* INITIALIZATION */
 
@@ -60,28 +61,6 @@ import("dotenv").then(async ({ config }) => {
   commands.register(importedCommands)
 })
 
-/* TYPESCRIPT STUFF */
-
-type interactionSource =
-  | "button"
-  | "context-menu"
-  | "slash-command"
-  | "select-menu"
-  | "context-menu"
-
-export type customInteraction = customButtonInteraction | customOtherInteraction
-
-export interface customButtonInteraction {
-  id: string
-  type: "button"
-  handler: (interaction: ButtonInteraction) => void
-}
-interface customOtherInteraction {
-  id: string
-  type: interactionSource
-  handler: (interaction: Interaction) => void
-}
-
 /* CONSTANTS */
 
 const prefix = "p!"
@@ -89,57 +68,15 @@ const prefixRegex = new RegExp(`^${prefix}`)
 const arrowRight = "**\u2192**"
 
 // Registries
-const customInteractions = new Map()
+export const customInteractions = new Registry<customInteraction>()
 
 /* CONTEXT BITS */
 
 const contextHelper: contextHelper = {
   client: () => client,
   commandRegistry: () => commands,
-  // @ts-ignore
   customInteractionRegistry: () => customInteractions,
   prefix: () => prefix,
-}
-
-/* INTERACTION MANAGEMENT */
-
-export function registerCustomInteractions(interactions: customInteraction[]) {
-  for (const interaction of interactions) {
-    customInteractions.set(interaction.id, interaction)
-  }
-}
-
-function handleInteraction(i: Interaction) {
-  if (i.isButton()) return handleButtonInteraction(i)
-}
-
-async function handleButtonInteraction(i: ButtonInteraction) {
-  const [actionType, handlerId] = i.customId.split("/")
-
-  if (actionType === "custom") {
-    const customInteraction: customInteraction =
-      customInteractions.get(handlerId)
-
-    if (!customInteraction) {
-      let interactionSrc = "interaction"
-      if (i.isButton()) interactionSrc = "button"
-      if (i.isCommand()) interactionSrc = "slash command"
-      if (i.isSelectMenu()) interactionSrc = "selection"
-
-      const reason = `Could not find a handler to match this ${interactionSrc}`
-      const content = $`
-        :x: ${bold("Interaction failed")} (${reason})
-
-        Registered interaction handlers: ${customInteractions.size}
-        Interaction ID: ${inlineCode(i.id)}
-        Handler ID: ${inlineCode(handlerId)}
-      `
-      return await i.reply({ content, ephemeral: true })
-    }
-
-    // If a handler is present, execute it
-    customInteraction.handler?.(i)
-  }
 }
 
 /* D.JS EVENT LISTENERS */
@@ -191,5 +128,3 @@ client.on("messageCreate", async (msg) => {
   // Execute the callback for the command
   command.callback({ params, message: msg, command, context: contextHelper })
 })
-
-client.on("interactionCreate", handleInteraction)

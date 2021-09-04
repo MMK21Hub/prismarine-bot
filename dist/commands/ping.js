@@ -1,8 +1,9 @@
-import { client, registerCustomInteractions, } from "../index.js";
+import { client } from "../index.js";
 import { MessageButton, MessageActionRow, Message, } from "discord.js";
 import { Command } from "../command.js";
 import { stripIndents as $ } from "common-tags";
 import { bold } from "@discordjs/builders";
+import { registerCustomInteractions, } from "../interaction.js";
 const refreshButton = new MessageActionRow().addComponents(new MessageButton()
     .setCustomId("custom/ping:refresh")
     .setLabel("Refresh")

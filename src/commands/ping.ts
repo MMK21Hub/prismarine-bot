@@ -1,8 +1,4 @@
-import {
-  client,
-  registerCustomInteractions,
-  customButtonInteraction,
-} from "../index.js"
+import { client } from "../index.js"
 import {
   MessageButton,
   MessageActionRow,
@@ -12,6 +8,10 @@ import {
 import { Command, commandEvent } from "../command.js"
 import { stripIndents as $ } from "common-tags"
 import { bold } from "@discordjs/builders"
+import {
+  customButtonInteraction,
+  registerCustomInteractions,
+} from "../interaction.js"
 
 const refreshButton = new MessageActionRow().addComponents(
   new MessageButton()

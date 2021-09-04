@@ -1,16 +1,5 @@
-import { Client, Interaction, ButtonInteraction } from "discord.js";
+import { Registry } from "./util.js";
+import { Client } from "discord.js";
+import { customInteraction } from "./interaction.js";
 export declare const client: Client;
-declare type interactionSource = "button" | "context-menu" | "slash-command" | "select-menu" | "context-menu";
-export declare type customInteraction = customButtonInteraction | customOtherInteraction;
-export interface customButtonInteraction {
-    id: string;
-    type: "button";
-    handler: (interaction: ButtonInteraction) => void;
-}
-interface customOtherInteraction {
-    id: string;
-    type: interactionSource;
-    handler: (interaction: Interaction) => void;
-}
-export declare function registerCustomInteractions(interactions: customInteraction[]): void;
-export {};
+export declare const customInteractions: Registry<customInteraction>;
