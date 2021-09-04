@@ -1,8 +1,13 @@
 /* IMPORTS */
 
 // Local files
-import { commands, contextHelper, lookupCommandName } from "./command.js"
-import { Registry } from "./util.js"
+import { commands, lookupCommandName } from "./command.js"
+import {
+  prefixRegex,
+  Registry,
+  characters as _,
+  prefixedCommand,
+} from "./util.js"
 
 // Builtins
 import fs from "fs"
@@ -63,21 +68,8 @@ import("dotenv").then(async ({ config }) => {
 
 /* CONSTANTS */
 
-const prefix = "p!"
-const prefixRegex = new RegExp(`^${prefix}`)
-const arrowRight = "**\u2192**"
-
-// Registries
-export const customInteractions = new Registry<customInteraction>()
-
-/* CONTEXT BITS */
-
-const contextHelper: contextHelper = {
-  client: () => client,
-  commandRegistry: () => commands,
-  customInteractionRegistry: () => customInteractions,
-  prefix: () => prefix,
-}
+// Bot prefix
+export const prefix = "p!"
 
 /* D.JS EVENT LISTENERS */
 
@@ -118,7 +110,7 @@ client.on("messageCreate", async (msg) => {
       :x: **Missing one or more required parameters**
       Expected ${minParams} parameter(s) but got ${params.length}.
 
-      ${arrowRight} Type ${inlineCode(`${prefix}help ${command.name}`)} \
+      ${bold(_.ARROW_RIGHT)} Type ${prefixedCommand("help", [command.name])} \
       to view command help.
     `)
 
@@ -126,5 +118,5 @@ client.on("messageCreate", async (msg) => {
   }
 
   // Execute the callback for the command
-  command.callback({ params, message: msg, command, context: contextHelper })
+  command.callback({ params, message: msg, command })
 })

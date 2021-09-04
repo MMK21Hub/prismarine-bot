@@ -1,3 +1,5 @@
+import { prefix } from "./index"
+
 /**
  * Generates a map that allows for quick lookup of a specific property
  * @param data An object that has the data that needs to be cached
@@ -65,15 +67,15 @@ export function validNamespacedId(value: string) {
  * )
  * // **p!connect localhost 8080**
  */
-// export function prefixedCommand(
-//   command: string,
-//   args: string[] = [],
-//   wrap = ""
-// ) {
-//   const joinedArgs = args.join(" ")
-//   if (wrap) return wrap + prefix + command + " " + joinedArgs + wrap
-//   return prefix + command + " " + joinedArgs
-// }
+export function prefixedCommand(
+  command: string,
+  args: string[] = [],
+  wrap = ""
+) {
+  const joinedArgs = args.join(" ")
+  if (wrap) return wrap + prefix + command + " " + joinedArgs + wrap
+  return prefix + command + " " + joinedArgs
+}
 
 type postRegisterCallback<T extends anyObject> = (
   registry: Registry<T>,
@@ -109,4 +111,13 @@ export class Registry<T extends anyObject> extends Map<string, T> {
       this.postRegister?.(this, items)
     }
   }
+}
+
+export const prefixRegex = new RegExp(`^${prefix}`)
+
+export enum characters {
+  ARROW_LEFT = "\u2190",
+  ARROW_RIGHT = "\u2192",
+  ARROW_UP = "\u2191",
+  ARROW_DOWN = "\u2193",
 }

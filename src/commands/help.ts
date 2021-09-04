@@ -1,4 +1,5 @@
-import { Command } from "../command.js"
+import { prefixedCommand } from "../util.js"
+import { Command, commands } from "../command.js"
 
 export default new Command({
   name: "help",
@@ -10,8 +11,8 @@ export default new Command({
       optional: true,
     },
   ],
-  handler: ({ message, context }) => {
-    const reg = context.commandRegistry()
+  handler: ({ message }) => {
+    const reg = commands
 
     let longestCmd = 0
     reg.forEach((cmd) => {
@@ -24,7 +25,7 @@ export default new Command({
       const extraSpaces = " ".repeat(longestCmd - cmd.name.length)
 
       if (!cmd.shortDesc && cmd.desc) {
-        const helpRef = `${context.prefix()}help ${cmd.name}`
+        const helpRef = prefixedCommand("help", [cmd.name])
         output += `${cmd.name}${extraSpaces} # Type ${helpRef}\n`
         return
       }

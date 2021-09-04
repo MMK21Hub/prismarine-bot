@@ -1,4 +1,6 @@
 import { ButtonInteraction, Interaction } from "discord.js";
+import { Registry } from "./util.js";
+export declare const customInteractions: Registry<customInteraction>;
 declare type interactionSource = "button" | "context-menu" | "slash-command" | "select-menu" | "context-menu";
 export declare type customInteraction = customButtonInteraction | customOtherInteraction;
 export interface customButtonInteraction {

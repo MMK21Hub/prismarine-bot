@@ -1,6 +1,5 @@
-import { Client, Message } from "discord.js"
-import { customInteraction } from "./interaction.js"
-import { createCache, Registry, validNamespacedId } from "./util.js"
+import { Message } from "discord.js"
+import { Registry, validNamespacedId } from "./util.js"
 
 export interface commandOptions {
   /** The name of the command. This is what the user types to execute the command. */
@@ -22,7 +21,6 @@ export interface commandEvent {
   message: Message
   params: string[]
   command: Command
-  context: contextHelper
 }
 
 export interface commandParam {
@@ -32,13 +30,6 @@ export interface commandParam {
 }
 
 export type commandCallback = (e: commandEvent) => void
-
-export interface contextHelper {
-  commandRegistry: () => Registry<Command>
-  customInteractionRegistry: () => Registry<customInteraction>
-  prefix: () => string
-  client: () => Client
-}
 
 function handleOverloadedCommand(e: commandEvent) {
   if (typeof e.command.handler === "function") {

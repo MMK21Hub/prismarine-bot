@@ -1,3 +1,4 @@
+import { prefix } from "./index";
 export function createCache(data, options) {
     const cache = new Map();
     let index = 0;
@@ -16,6 +17,12 @@ export function validNamespacedId(value) {
         return true;
     }
     return false;
+}
+export function prefixedCommand(command, args = [], wrap = "") {
+    const joinedArgs = args.join(" ");
+    if (wrap)
+        return wrap + prefix + command + " " + joinedArgs + wrap;
+    return prefix + command + " " + joinedArgs;
 }
 export class Registry extends Map {
     constructor(postRegister) {
@@ -38,4 +45,12 @@ export class Registry extends Map {
         };
     }
 }
+export const prefixRegex = new RegExp(`^${prefix}`);
+export var characters;
+(function (characters) {
+    characters["ARROW_LEFT"] = "\u2190";
+    characters["ARROW_RIGHT"] = "\u2192";
+    characters["ARROW_UP"] = "\u2191";
+    characters["ARROW_DOWN"] = "\u2193";
+})(characters || (characters = {}));
 //# sourceMappingURL=util.js.map

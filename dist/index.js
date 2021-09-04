@@ -1,8 +1,8 @@
 import { commands, lookupCommandName } from "./command.js";
-import { Registry } from "./util.js";
+import { prefixRegex, characters as _, prefixedCommand, } from "./util.js";
 import Discord, { Intents, } from "discord.js";
 import { stripIndents as $ } from "common-tags";
-import { inlineCode } from "@discordjs/builders";
+import { bold } from "@discordjs/builders";
 const intents = new Intents();
 intents.add(Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.DIRECT_MESSAGE_REACTIONS);
 export const client = new Discord.Client({
@@ -20,16 +20,7 @@ import("dotenv").then(async ({ config }) => {
     const { default: importedCommands } = await import("./commands/index.js");
     commands.register(importedCommands);
 });
-const prefix = "p!";
-const prefixRegex = new RegExp(`^${prefix}`);
-const arrowRight = "**\u2192**";
-export const customInteractions = new Registry();
-const contextHelper = {
-    client: () => client,
-    commandRegistry: () => commands,
-    customInteractionRegistry: () => customInteractions,
-    prefix: () => prefix,
-};
+export const prefix = "p!";
 client.on("ready", () => {
     if (client.user) {
         console.log(`Logged in as ${client.user.tag}`);
@@ -59,11 +50,11 @@ client.on("messageCreate", async (msg) => {
       :x: **Missing one or more required parameters**
       Expected ${minParams} parameter(s) but got ${params.length}.
 
-      ${arrowRight} Type ${inlineCode(`${prefix}help ${command.name}`)} \
+      ${bold(_.ARROW_RIGHT)} Type ${prefixedCommand("help", [command.name])} \
       to view command help.
     `);
         return;
     }
-    command.callback({ params, message: msg, command, context: contextHelper });
+    command.callback({ params, message: msg, command });
 });
 //# sourceMappingURL=index.js.map

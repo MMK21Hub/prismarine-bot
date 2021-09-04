@@ -1,6 +1,8 @@
 import { bold, inlineCode } from "@discordjs/builders";
 import { stripIndents as $ } from "common-tags";
-import { client, customInteractions } from "./index.js";
+import { client } from "./index.js";
+import { Registry } from "./util.js";
+export const customInteractions = new Registry();
 export function registerCustomInteractions(interactions) {
     for (const interaction of interactions) {
         customInteractions.set(interaction.id, interaction);
