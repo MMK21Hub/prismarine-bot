@@ -2,6 +2,7 @@ import { Command } from "../command.js";
 export default new Command({
     name: "help",
     id: "help",
+    shortDesc: "Displays a list of all available commands",
     params: [
         {
             name: "command",
