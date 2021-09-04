@@ -47,13 +47,17 @@ export const client: Client = new Discord.Client({
 })
 
 // Register environment vars from the .env file
-import("dotenv").then(({ config }) => {
+import("dotenv").then(async ({ config }) => {
   // Throw eny errors encountered while loading .env
   const err = config().error
   if (err) throw err
 
   // Initialize a connection with the Discord gateway
   client.login(process.env.DISCORD_TOKEN)
+
+  // Register all commands
+  const { default: importedCommands } = await import("./commands/index.js")
+  commands.register(importedCommands)
 })
 
 /* TYPESCRIPT STUFF */

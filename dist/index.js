@@ -11,11 +11,13 @@ export const client = new Discord.Client({
         repliedUser: false,
     },
 });
-import("dotenv").then(({ config }) => {
+import("dotenv").then(async ({ config }) => {
     const err = config().error;
     if (err)
         throw err;
     client.login(process.env.DISCORD_TOKEN);
+    const { default: importedCommands } = await import("./commands/index.js");
+    commands.register(importedCommands);
 });
 const prefix = "p!";
 const prefixRegex = new RegExp(`^${prefix}`);

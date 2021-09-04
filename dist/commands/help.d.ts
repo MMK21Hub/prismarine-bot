@@ -1,2 +1,3 @@
 import { Command } from "../command.js";
-export declare const help: Command;
+declare const _default: Command;
+export default _default;

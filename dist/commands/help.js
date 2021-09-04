@@ -1,5 +1,5 @@
 import { Command } from "../command.js";
-export const help = new Command({
+export default new Command({
     name: "help",
     id: "help",
     params: [
