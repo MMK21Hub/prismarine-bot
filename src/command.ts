@@ -56,17 +56,7 @@ function handleOverloadedCommand(e: commandEvent) {
   })
 }
 
-export const commands: Registry<Command> = new Registry((reg, items) => {
-  // Update the command name cache when a new command is registered
-  let allCommands: Command[] = []
-  reg.forEach((command) => {
-    allCommands.push(command)
-  })
-  return createCache(allCommands, {
-    key: "name",
-    value: "id",
-  })
-})
+export const commands: Registry<Command> = new Registry()
 
 export class Command {
   // Properties

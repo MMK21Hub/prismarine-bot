@@ -1,4 +1,4 @@
-import { createCache, Registry, validNamespacedId } from "./util.js";
+import { Registry, validNamespacedId } from "./util.js";
 function handleOverloadedCommand(e) {
     if (typeof e.command.handler === "function") {
         e.command.callback(e);
@@ -11,16 +11,7 @@ function handleOverloadedCommand(e) {
         }
     });
 }
-export const commands = new Registry((reg, items) => {
-    let allCommands = [];
-    reg.forEach((command) => {
-        allCommands.push(command);
-    });
-    return createCache(allCommands, {
-        key: "name",
-        value: "id",
-    });
-});
+export const commands = new Registry();
 export class Command {
     constructor(options) {
         this.name = options.name;
