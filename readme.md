@@ -11,19 +11,27 @@ Prismarine Bot is a Discord bot that uses [PrismarineJS](https://prismarine.js.o
 to let you connect to Minecraft servers through Discord.
 It is easy to self-host, with the official instance being [Prismarine Bot#1946][1].
 
-## Branches
+## Branches explained
 
-- `master` - This is running in production
-- `staging` - Where new features are worked on before being merged
+- `master` - This is running in production, and should be mostly stable.
+- `staging` - Where new features are worked on before being merged. Intended for development: the bot may function, but a feature may be missing while it's reimplemented etc.
+- `wip` - Sometimes used for working on large commits for `staging`. This branch may not function, or even build.
 
-## Todo list
+# Self-hosting
 
-### Before v0.1 release
+Clone the repo and prepare necessary files:
+```sh
+git clone https://github.com/MMK21Hub/prismarine-bot.git
+cd prismarine-bot
+npm i         # Installs all the requied dependencies to your local PC
+npm run build # Makes sure that all the .js files are the latest build
+```
 
-- Refactoring
+Launch the bot:
+```sh
+node dist/main.js
+```
 
-### Pushed back to after v0.1
-
-- Plugin support
+If you want to contribute, start the TS compliler in watch mode with `npm run watch`
 
 [1]: https://discord.com/oauth2/authorize?client_id=868840188347031622&amp;scope=bot&amp;permissions=2214976576 "Invite link"
