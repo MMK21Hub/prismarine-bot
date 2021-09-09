@@ -10,10 +10,9 @@ It is easy to self-host, with the official instance being [Prismarine Bot#1946][
 
 ## Branches explained
 
-- `master` - This is running in production, and should be mostly stable.
-- `staging` - Where new features are worked on before being merged. Intended for development: the bot may function, but a feature may be missing while it's reimplemented etc.
-- `wip` - Sometimes used for working on large commits for `staging`. This branch may not function, or even build.
-environment
+- **`master`** - Features arrive here once they're 'released'. Intended for production: the bot will be (relatively) stable and bug-free.
+- **`staging`** - Where new features go before being merged. Intended for testing: the bot should function, but a feature may be missing while it's reimplemented etc.
+- **Feature branches** - New features that are being worked on. Intended for develpment: the bot could be completely borked while somebody's working on it.
 
 ## Self-hosting
 
