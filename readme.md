@@ -15,7 +15,7 @@ It is easy to self-host, with the official instance being [Prismarine Bot#1946][
 - `wip` - Sometimes used for working on large commits for `staging`. This branch may not function, or even build.
 environment
 
-# Self-hosting
+## Self-hosting
 
 Clone the repo and prepare necessary files:
 ```sh
