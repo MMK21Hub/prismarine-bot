@@ -1,4 +1,4 @@
-import { client } from "../index.js"
+import { client } from "../main.js"
 import {
   MessageButton,
   MessageActionRow,

@@ -14,7 +14,6 @@ export declare class Registry<T extends anyObject> extends Map<string, T> {
     private postRegister?;
     constructor(postRegister?: postRegisterCallback<T>);
 }
-export declare const prefixRegex: RegExp;
 export declare enum characters {
     ARROW_LEFT = "\u2190",
     ARROW_RIGHT = "\u2192",
@@ -27,7 +26,7 @@ interface discordBotOptions {
 interface prismarineClientOptions extends ClientOptions {
     botOptions: discordBotOptions;
 }
-export declare class prismarineClient extends Client {
+export declare class PrismarineClient extends Client {
     botOptions: discordBotOptions;
     constructor(options: prismarineClientOptions);
 }

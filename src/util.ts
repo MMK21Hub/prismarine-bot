@@ -1,5 +1,5 @@
 import { Client, ClientOptions } from "discord.js"
-import { client, prefix } from "./index.js"
+import { client, prefix } from "./main.js"
 
 /**
  * Generates a map that allows for quick lookup of a specific property

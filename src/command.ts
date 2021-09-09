@@ -1,6 +1,6 @@
 import { bold } from "@discordjs/builders"
 import { Message } from "discord.js"
-import { client } from "./index.js"
+import { client } from "./main.js"
 import {
   prefixedCommand,
   Registry,

@@ -1,4 +1,4 @@
-import { client } from "../index.js";
+import { client } from "../main.js";
 import { MessageButton, MessageActionRow, Message, } from "discord.js";
 import { Command } from "../command.js";
 import { stripIndents as $ } from "common-tags";

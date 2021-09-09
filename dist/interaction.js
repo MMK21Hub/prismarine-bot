@@ -1,6 +1,6 @@
 import { bold, inlineCode } from "@discordjs/builders";
 import { stripIndents as $ } from "common-tags";
-import { client } from "./index.js";
+import { client } from "./main.js";
 import { Registry } from "./util.js";
 export const customInteractions = new Registry();
 export function registerCustomInteractions(interactions) {

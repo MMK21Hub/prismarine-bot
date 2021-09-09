@@ -1,6 +1,6 @@
-import { commands } from "./command.js";
+import { PrismarineClient } from "./util.js";
 import { Intents } from "discord.js";
-import { prismarineClient as PrismarineClient } from "./util.js";
+import { commands } from "./command.js";
 const intents = new Intents();
 intents.add(Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.DIRECT_MESSAGE_REACTIONS);
 export const client = new PrismarineClient({
@@ -29,4 +29,4 @@ client.on("ready", () => {
     }
     console.error("There is no user!");
 });
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=main.js.map

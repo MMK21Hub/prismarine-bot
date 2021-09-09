@@ -1,6 +1,6 @@
 import { bold } from "@discordjs/builders";
-import { client } from "./index.js";
-import { prefixedCommand, prefixRegex, Registry, validNamespacedId, characters as _, } from "./util.js";
+import { client } from "./main.js";
+import { prefixedCommand, Registry, validNamespacedId, characters as _, } from "./util.js";
 import { stripIndents as $ } from "common-tags";
 function handleOverloadedCommand(e) {
     if (typeof e.command.handler === "function") {
@@ -74,6 +74,7 @@ export function lookupCommandName(name) {
     return result;
 }
 client.on("messageCreate", async (msg) => {
+    const prefixRegex = new RegExp(`^${client.botOptions.defaultPrefix}`);
     if (!msg.content.match(prefixRegex))
         return;
     const splitCmd = msg.content.split(" ");
