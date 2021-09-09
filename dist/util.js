@@ -1,4 +1,5 @@
-import { prefix } from "./index";
+import { Client } from "discord.js";
+import { client, prefix } from "./index.js";
 export function createCache(data, options) {
     const cache = new Map();
     let index = 0;
@@ -45,7 +46,7 @@ export class Registry extends Map {
         };
     }
 }
-export const prefixRegex = new RegExp(`^${prefix}`);
+export const prefixRegex = new RegExp(`^${client.botOptions.defaultPrefix}`);
 export var characters;
 (function (characters) {
     characters["ARROW_LEFT"] = "\u2190";
@@ -53,4 +54,10 @@ export var characters;
     characters["ARROW_UP"] = "\u2191";
     characters["ARROW_DOWN"] = "\u2193";
 })(characters || (characters = {}));
+export class prismarineClient extends Client {
+    constructor(options) {
+        super(options);
+        this.botOptions = options.botOptions;
+    }
+}
 //# sourceMappingURL=util.js.map

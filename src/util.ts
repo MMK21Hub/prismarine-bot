@@ -1,4 +1,5 @@
-import { prefix } from "./index"
+import { Client, ClientOptions } from "discord.js"
+import { client, prefix } from "./index.js"
 
 /**
  * Generates a map that allows for quick lookup of a specific property
@@ -113,12 +114,36 @@ export class Registry<T extends anyObject> extends Map<string, T> {
   }
 }
 
-export const prefixRegex = new RegExp(`^${prefix}`)
-
 export enum characters {
   // ARROWS https://en.wikipedia.org/wiki/Arrow_(symbol)
   ARROW_LEFT = "\u2190",
   ARROW_RIGHT = "\u2192",
   ARROW_UP = "\u2191",
   ARROW_DOWN = "\u2193",
+}
+
+interface discordBotOptions {
+  /**
+   * The prefix that the bot will have when joining a new server.
+   * If not specified, the bot will only be usable by mentioning the bot.
+   * This can be overridden using a server config command
+   *
+   * NOTE: At the moment the bot prefix is global and cannot be configured per-server
+   */
+  defaultPrefix?: string
+}
+
+interface prismarineClientOptions extends ClientOptions {
+  botOptions: discordBotOptions
+}
+
+export class PrismarineClient extends Client {
+  /** Contains configuration for this specific instance of Prismarine Bot */
+  botOptions: discordBotOptions
+
+  constructor(options: prismarineClientOptions) {
+    super(options)
+
+    this.botOptions = options.botOptions
+  }
 }

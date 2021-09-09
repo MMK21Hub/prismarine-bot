@@ -1,10 +1,13 @@
 /* IMPORTS */
 
-// Get the command registry so that we can register the imported commands
-import { commands } from "./command.js"
+// Our own custom discord client class, based on the default D.JS one
+import { PrismarineClient } from "./util.js"
 
 // Bits from Discord.js that we'll use to initialize the client
-import { Intents, Client } from "discord.js"
+import { Intents } from "discord.js"
+
+// Get the command registry so that we can register the imported commands
+import { commands } from "./command.js"
 
 /* INITIALIZATION */
 
@@ -19,7 +22,7 @@ intents.add(
 )
 
 // Create a new D.JS client
-export const client: Client = new Client({
+export const client = new PrismarineClient({
   // Specifies the events that the bot receives
   intents,
   // Lets the bot work in DMs
@@ -27,6 +30,10 @@ export const client: Client = new Client({
   // Stops replies from pinging the user
   allowedMentions: {
     repliedUser: false,
+  },
+  // Specify the prefix for Prismarine Bot to use
+  botOptions: {
+    defaultPrefix: "p!",
   },
 })
 

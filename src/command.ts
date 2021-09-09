@@ -3,7 +3,6 @@ import { Message } from "discord.js"
 import { client } from "./index.js"
 import {
   prefixedCommand,
-  prefixRegex,
   Registry,
   validNamespacedId,
   characters as _,
@@ -149,6 +148,8 @@ export function lookupCommandName(name: string): null | Command {
 
 // Add an event listener to detect when a user enters a command
 client.on("messageCreate", async (msg) => {
+  const prefixRegex = new RegExp(`^${client.botOptions.defaultPrefix}`)
+
   // Not a command
   if (!msg.content.match(prefixRegex)) return
 

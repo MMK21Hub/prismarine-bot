@@ -1,3 +1,4 @@
+import { Client, ClientOptions } from "discord.js";
 export declare function createCache(data: any[], options: {
     key: string;
     value: string;
@@ -13,11 +14,21 @@ export declare class Registry<T extends anyObject> extends Map<string, T> {
     private postRegister?;
     constructor(postRegister?: postRegisterCallback<T>);
 }
-export declare const prefixRegex: any;
+export declare const prefixRegex: RegExp;
 export declare enum characters {
     ARROW_LEFT = "\u2190",
     ARROW_RIGHT = "\u2192",
     ARROW_UP = "\u2191",
     ARROW_DOWN = "\u2193"
+}
+interface discordBotOptions {
+    defaultPrefix?: string;
+}
+interface prismarineClientOptions extends ClientOptions {
+    botOptions: discordBotOptions;
+}
+export declare class prismarineClient extends Client {
+    botOptions: discordBotOptions;
+    constructor(options: prismarineClientOptions);
 }
 export {};
