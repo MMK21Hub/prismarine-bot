@@ -1,6 +1,6 @@
 {
   "name": "prismarine-bot",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "A discord bot that does some neat stuff with PrismarineJS",
   "main": "dist/index.js",
   "type": "module",
