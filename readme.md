@@ -13,6 +13,7 @@ It is easy to self-host, with the official instance being [Prismarine Bot#1946][
 - `master` - This is running in production, and should be mostly stable.
 - `staging` - Where new features are worked on before being merged. Intended for development: the bot may function, but a feature may be missing while it's reimplemented etc.
 - `wip` - Sometimes used for working on large commits for `staging`. This branch may not function, or even build.
+environment
 
 # Self-hosting
 
@@ -22,6 +23,12 @@ git clone https://github.com/MMK21Hub/prismarine-bot.git
 cd prismarine-bot
 npm i         # Installs all the requied dependencies to your local PC
 npm run build # Makes sure that all the .js files are the latest build
+touch .env    # Creates a file to put your environment variables in
+```
+
+Fill out the `.env` file:
+```properties
+DISCORD_TOKEN = BOT.TOKEN.HERE
 ```
 
 Launch the bot:
