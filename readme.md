@@ -1,11 +1,8 @@
 # Prismarine Bot
 
-<div style="display:flex;gap:.5em;justify-content:center;width:100%">
-  <img style="width:100%;max-width:5em" src="assets/prismarine-bot.svg" alt="Prismarine Bot logo">
-  <div style="font-size:1.5rem;display:flex;align-items:center;flex-shrink: 0;">
-    <div><strong>Control Minecraft servers and clients through Discord</strong></div>
-  </div>
-</div>
+<img height="120em" align="left" src="assets/prismarine-bot.svg" alt="Prismarine Bot logo">
+
+## Control Minecraft servers and clients through Discord</h2></div>
 
 Prismarine Bot is a Discord bot that uses [PrismarineJS](https://prismarine.js.org/)
 to let you connect to Minecraft servers through Discord.
