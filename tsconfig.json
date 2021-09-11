@@ -29,10 +29,5 @@
   ],
   "exclude": [
     "node_modules"
-  ],
-  // "references": [
-  //   {
-  //     "path": "config/plugins.tsconfig.json"
-  //   }
-  // ]
+  ]
 }
