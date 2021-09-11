@@ -1,6 +1,6 @@
 import { PrismarineClient } from "./util.js";
 import { Intents } from "discord.js";
-import { commands } from "./command.js";
+import { addListener, commands } from "./command.js";
 const intents = new Intents();
 intents.add(Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.DIRECT_MESSAGE_REACTIONS);
 export const client = new PrismarineClient({
@@ -18,6 +18,7 @@ import("dotenv").then(async ({ config }) => {
     if (err)
         throw err;
     client.login(process.env.DISCORD_TOKEN);
+    addListener(client);
     const { default: importedCommands } = await import("./commands/index.js");
     commands.register(importedCommands);
 });

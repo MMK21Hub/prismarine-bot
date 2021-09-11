@@ -1,5 +1,5 @@
 import { Message } from "discord.js";
-import { Registry } from "./util.js";
+import { Registry, PrismarineClient } from "./util.js";
 export interface commandOptions {
     name: string;
     id: string;
@@ -35,4 +35,5 @@ declare class StubCommand extends Command {
     constructor(id: string, handler: commandCallback, params?: commandParam[], desc?: string);
 }
 export declare function lookupCommandName(name: string): null | Command;
+export declare function addListener(client: PrismarineClient): void;
 export {};

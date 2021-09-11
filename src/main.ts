@@ -7,7 +7,7 @@ import { PrismarineClient } from "./util.js"
 import { Intents } from "discord.js"
 
 // Get the command registry so that we can register the imported commands
-import { commands } from "./command.js"
+import { addListener, commands } from "./command.js"
 
 /* INITIALIZATION */
 
@@ -45,6 +45,9 @@ import("dotenv").then(async ({ config }) => {
 
   // Initialize a connection with the Discord gateway
   client.login(process.env.DISCORD_TOKEN)
+
+  // Watch for new command being sent
+  addListener(client)
 
   // Register all commands
   const { default: importedCommands } = await import("./commands/index.js")

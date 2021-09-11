@@ -1,11 +1,11 @@
 import { bold } from "@discordjs/builders"
 import { Message } from "discord.js"
-import { client } from "./main.js"
 import {
   prefixedCommand,
   Registry,
   validNamespacedId,
   characters as _,
+  PrismarineClient,
 } from "./util.js"
 import { stripIndents as $ } from "common-tags"
 
@@ -147,34 +147,35 @@ export function lookupCommandName(name: string): null | Command {
 }
 
 // Add an event listener to detect when a user enters a command
-client.on("messageCreate", async (msg) => {
-  const prefixRegex = new RegExp(`^${client.botOptions.defaultPrefix}`)
+export function addListener(client: PrismarineClient) {
+  client.on("messageCreate", async (msg) => {
+    const prefixRegex = new RegExp(`^${client.botOptions.defaultPrefix}`)
 
-  // Not a command
-  if (!msg.content.match(prefixRegex)) return
+    // Not a command
+    if (!msg.content.match(prefixRegex)) return
 
-  // Process the message to get `commandName` and `params` out of it
-  const splitCmd = msg.content.split(" ")
-  const commandName = splitCmd[0].replace(prefixRegex, "").toLowerCase()
-  const params = splitCmd.slice(1)
+    // Process the message to get `commandName` and `params` out of it
+    const splitCmd = msg.content.split(" ")
+    const commandName = splitCmd[0].replace(prefixRegex, "").toLowerCase()
+    const params = splitCmd.slice(1)
 
-  // Get the command from the command name
-  const command = lookupCommandName(commandName)
-  // Ignore the message if the command does not exist
-  if (!command) return
+    // Get the command from the command name
+    const command = lookupCommandName(commandName)
+    // Ignore the message if the command does not exist
+    if (!command) return
 
-  let minParams = 0
-  if (command.params) {
-    // Check each param
-    command.params.forEach((param) => {
-      if (!param.optional) {
-        minParams++
-      }
-    })
-  }
+    let minParams = 0
+    if (command.params) {
+      // Check each param
+      command.params.forEach((param) => {
+        if (!param.optional) {
+          minParams++
+        }
+      })
+    }
 
-  if (command.params && params.length < minParams) {
-    msg.channel.send($`
+    if (command.params && params.length < minParams) {
+      msg.channel.send($`
       :x: **Missing one or more required parameters**
       Expected ${minParams} parameter(s) but got ${params.length}.
 
@@ -182,9 +183,10 @@ client.on("messageCreate", async (msg) => {
       to view command help.
     `)
 
-    return
-  }
+      return
+    }
 
-  // Execute the callback for the command
-  command.callback({ params, message: msg, command })
-})
+    // Execute the callback for the command
+    command.callback({ params, message: msg, command })
+  })
+}
