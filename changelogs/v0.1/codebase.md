@@ -19,3 +19,12 @@
   - You can also specify a `postRegister` callback when initializing the registry. This is ran after each command is registered, and supplies two parameters: the registry itself, and the items that have just been registered.
   - Registries are currently used in the bot to manage custom interactions and commands
 - A `PrismarineClient` class is now available. It extends the D.JS `Client` with a `botOptions` property, which is used to store deployment-specific config. Currently it stores the bot prefix.
+
+### Command handling
+
+A new `Command` class is now available for basic command parsing:
+
+- The constructor takes a single `commandOptions` param. (See JSDoc for property descriptions)
+  - Parameter handling is currently very basic, but you can specify parameter names and wether they're optional or not
+  - The handler is usually a callback function, unless the command is 'overloaded' (see below)
+  - There is a `parent` property, but it does nothing and will probably be removed once subcommands are properly implemented.
