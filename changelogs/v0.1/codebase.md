@@ -18,3 +18,4 @@
     - It accepts one optional parameter (`key`), which specifies the property to be used as the namespaced ID. Its default value is `"id"`.
   - You can also specify a `postRegister` callback when initializing the registry. This is ran after each command is registered, and supplies two parameters: the registry itself, and the items that have just been registered.
   - Registries are currently used in the bot to manage custom interactions and commands
+- A `PrismarineClient` class is now available. It extends the D.JS `Client` with a `botOptions` property, which is used to store deployment-specific config. Currently it stores the bot prefix.
