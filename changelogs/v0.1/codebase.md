@@ -28,3 +28,39 @@ A new `Command` class is now available for basic command parsing:
   - Parameter handling is currently very basic, but you can specify parameter names and wether they're optional or not
   - The handler is usually a callback function, unless the command is 'overloaded' (see below)
   - There is a `parent` property, but it does nothing and will probably be removed once subcommands are properly implemented.
+
+#### Overloaded commands
+
+Sometimes, you want to use a different callback function depending on the arguments provided when the command is used. Instead of specifying a single callback function as the command's `handler`, you can specify an array of `StubCommand`s instead. Commands that have an array of stub commands as their handler are referred to as overloaded commands, since they have multiple 'overloads' that could be picked when the command is run.
+
+- Stub commands are like mini commands that the user access as a single command, like multiple commands that use the same name.
+- For example, you might want your `tag` command to display a list of tags when ran without arguments, but send the contents of a specific tags when an argument is specified.
+- Two properties important when creating a stub command: `arguments` and `handler`. (You also need to specify a unique ID.) Both properties act the same as they do in a normal command.
+- When an overloaded command is used, the parser decides which stub command to call based on the number of arguments that the command is used with.
+  - Currently, stub commands can only be differentiated by number of arguments, but soon argument types (date, number, text, etc) will be able to be used too.
+
+Overloaded command example:
+
+```typescript
+const tagCommand = new Command({
+  name: "tag",
+  id: "custom_tags:tag",
+  // Specifying the params on the base Command object is optional
+  params: [
+    {
+      name: "tag",
+      optional: true,
+    },
+  ],
+  handler: [
+    // Set two stub commands as the handler
+    new StubCommand("custom_tags:list_tags", listTags, []),
+    new StubCommand("custom_tags:print_tag", printTags, [
+      // Make sure to specify params here
+      {
+        name: "tag",
+      },
+    ]),
+  ],
+})
+```
