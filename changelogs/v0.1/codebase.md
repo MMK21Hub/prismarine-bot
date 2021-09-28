@@ -1,5 +1,7 @@
 # v0.1 Changelog (Codebase)
 
+This is a (very incomplete) list of some of the new features in v0.1.
+
 ## Additions
 
 ### General
