@@ -19,16 +19,21 @@ const refreshButton = new MessageActionRow().addComponents(
     .setLabel("Refresh")
     .setStyle("PRIMARY")
     .setEmoji("🔁")
+  // .setDisabled(true)
 )
 
 function ping(e: commandEvent) {
-  e.message.reply({
+  const response = e.message.reply(generateResponse())
+}
+
+function generateResponse() {
+  return {
     content: $`
       :ping_pong: ${bold("Pong!")}
       Websocket heartbeat: ${client.ws.ping}ms
     `,
     components: [refreshButton],
-  })
+  }
 }
 
 async function refreshInteractionHandler(interaction: ButtonInteraction) {
@@ -40,18 +45,12 @@ async function refreshInteractionHandler(interaction: ButtonInteraction) {
       Possible causes:
         - Incorrect scopes specified when inviting the bot
         - Clicking a button from a bot message after the bot has left the server
-        - Some Discord API change (create a GH issue to fix the)
+        - Some Discord API change (create a GH issue)
     `
     return await interaction.reply({ content, ephemeral: true })
   }
 
-  interaction.message.edit({
-    content: $`
-              :ping_pong: ${bold("Pong!")}
-              Websocket heartbeat: ${client.ws.ping}ms
-            `,
-    components: [refreshButton],
-  })
+  interaction.message.edit(generateResponse())
 }
 
 const refreshInteraction: customButtonInteraction = {

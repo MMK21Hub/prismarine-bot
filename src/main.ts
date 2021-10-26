@@ -66,3 +66,13 @@ client.on("ready", () => {
   // This shouldn't happen
   console.error("There is no user!")
 })
+
+// Custom event that's emitted when a heartbeat is acknowledged
+// Listen for any debug messages
+client.on("debug", (message) => {
+  // Check if the debug message contains "Heartbeat acknowledged"
+  if (!message.match("Heartbeat acknowledged")) return
+
+  // Emit the `heartbeat` event
+  client.emit("heartbeat")
+})
