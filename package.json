@@ -30,7 +30,7 @@
     "dotenv": "^10.0.0",
     "esm": "^3.2.25",
     "minecraft-protocol": "^1.25.0",
-    "mineflayer": "^3.9.0",
+    "mineflayer": "^3.11.2",
     "mineflayer-tps": "^1.0.1",
     "murmurhash-v3": "^1.0.2",
     "prismarine-viewer": "^1.19.3",
